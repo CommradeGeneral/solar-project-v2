@@ -1,0 +1,9 @@
+.main-page {
+    .side-bar {
+        transition: width 0.5s;
+    }
+
+    .work-area {
+        transition: width 0.5s, margin-right 0.5s, margin-left 0.5s;
+    }
+}

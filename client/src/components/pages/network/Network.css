@@ -1,0 +1,65 @@
+svg *[class^="switch-"],
+svg *[class^="gateway-"],
+svg *[class^="pr-"],
+svg .energy-meters,
+svg .weather-station,
+svg .media-converter,
+svg *[class^="laptop-"],
+svg .desktop-workstation {
+    filter: brightness(100%);
+    transition: filter 0.3s ease-in-out;
+
+    &.online {
+        filter: brightness(100%);
+    }
+
+}
+
+svg *[class^="pr-"],
+svg *[class^='energy-meter-'],
+svg *[class^='ws-'] {
+    cursor: pointer;
+    transition: fill 2s ease-in-out;
+
+    &>text>tspan {
+        transition: fill 0.3s ease-in-out;
+    }
+
+    &:hover>text>tspan {
+        fill: rgb(117, 153, 255) !important;
+    }
+}
+
+
+
+svg *[class^='signal-'] {
+    &:not(.online) {
+        /*opacity: 40%;
+        animation: offline 1s ease-in-out infinite;
+        animation-direction: alternate;
+        animation-play-state: running;*/
+    }
+
+    &.online {
+        animation-play-state: paused;
+        opacity: 0%;
+    }
+
+    opacity: 0%;
+    transition: opacity 0.3s ease-in-out;
+
+}
+
+@keyframes offline {
+    0% {
+        opacity: 40%;
+    }
+
+    50% {
+        opacity: 100%;
+    }
+
+    100% {
+        opacity: 40%;
+    }
+}

@@ -1,0 +1,24 @@
+.input-field-dim {
+    background-color: #22324a;
+    border: 1px solid rgba(91, 95, 199, 0.2);
+    padding: 10px;
+    color: white;
+    border-radius: 5px;
+}
+
+.input-field-dim:focus {
+    outline: none;
+    border-color: #5b5fc7;
+}
+
+.input-field-dim:hover {
+    background-color: #ffffff14;
+}
+
+.input-field-dim:active {
+    background-color: #ffffff14;
+}
+
+.input-field-dim::placeholder {
+    color: #ffffffff;
+}
