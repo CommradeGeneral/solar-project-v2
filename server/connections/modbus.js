@@ -4,7 +4,7 @@ import { EventEmitter } from "events";
 // ─── Reconnection config ───────────────────────────────────────────────────────
 const RECONNECT_BASE_DELAY_MS = 1_000;   // first retry after 1 s
 const RECONNECT_MAX_DELAY_MS = 2000;  // cap at 30 s
-const RECONNECT_BACKOFF_FACTOR = 2;       // double each attempt
+const RECONNECT_BACKOFF_FACTOR = 1.01;       // double each attempt
 const RECONNECT_MAX_ATTEMPTS = Infinity; // retry forever (set a number to limit)
 
 // ─── Connection states ─────────────────────────────────────────────────────────
