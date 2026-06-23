@@ -14,6 +14,10 @@ app.get("/favicon.svg", (req, res) => {
     res.sendFile(path.join(__dirname, "../../client/dist/favicon.svg"));
 });
 
+app.get("/unjustking.svg", (req, res) => {
+    res.sendFile(path.join(__dirname, "../../client/dist/unjustking.svg"));
+});
+
 app.use(express.static(path.join(__dirname, "../../client/dist")));
 
 //app.use(express.static(path.join(__dirname, "../../client/dist/favicon.svg")));
@@ -25,6 +29,6 @@ router.route("/").get((req, res) => {
 
 app.use("/main", router);
 
-app.listen(8000, "192.168.1.230", () => {
+app.listen(8000, "192.168.100.13", () => {
     console.log("Server started on port 5050");
 });

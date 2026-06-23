@@ -19,10 +19,6 @@ function App() {
   const [socket, setSocket] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
 
-
-
-
-
   const cardsData = [
     {
       title: { en: 'CSS1 - East Wing', ar: 'CSS1 - الجناح الشرقي' },
@@ -76,7 +72,7 @@ function App() {
       socket.emit("page", { clientId: socket.id, page });
       return;
     };
-    const mysocket = io("ws://localhost:3000");
+    const mysocket = io("ws://192.168.100.13:3000");
 
     mysocket.on("connect", () => {
       console.log("Connected to server", mysocket.id);
@@ -85,7 +81,6 @@ function App() {
 
       mysocket.on("data-exchange", (data) => {
         database = { ...database, ...data };
-        console.log(database);
       })
     });
 
