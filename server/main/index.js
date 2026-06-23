@@ -11,7 +11,6 @@ const app = express();
 const router = Router();
 
 app.get("/favicon.svg", (req, res) => {
-    console.log("kosomak")
     res.sendFile(path.join(__dirname, "../../client/dist/favicon.svg"));
 });
 
@@ -24,9 +23,8 @@ router.route("/").get((req, res) => {
 });
 
 
-
 app.use("/main", router);
 
-app.listen(8000, "192.168.100.13", () => {
+app.listen(8000, "192.168.1.230", () => {
     console.log("Server started on port 5050");
 });

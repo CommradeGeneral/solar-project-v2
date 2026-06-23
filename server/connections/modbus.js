@@ -279,12 +279,12 @@ class ModbusClient extends EventEmitter {
                 memList[uu].penalty = 0;
 
             }
-            this.addPollTimer(100, async () => {
+            this.addPollTimer(this.pollingInterval, async () => {
                 // Skip if not connected (reconnect may be in progress)
-                if (inverter1.state !== STATE.CONNECTED) return;
+                if (this.state !== STATE.CONNECTED) return;
 
                 for (const mem of memList) {
-                    // prevent await
+                    // prevent awaitFF
                     let values = null;
                     if (mem.status != 0 && mem.status != 2) continue;
                     mem.status = mem.status + 1;
@@ -314,7 +314,7 @@ class ModbusClient extends EventEmitter {
                         if (err.errno == "ECONNREFUSED") {
                             if (timeout) clearTimeout(timeout);
                             console.log("forcing reconnect")
-                            inverter1._onDisconnected(err);
+                            this._onDisconnected(err);
                         }
                     })
                 }
