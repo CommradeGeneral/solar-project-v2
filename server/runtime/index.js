@@ -7,35 +7,18 @@ const mysocket = new Server(3000, {
     }
 });
 
-let kingsocket = null;
-
-let myFunctions = null;
-
 mysocket.on("connection", (socket) => {
-    console.log("A user connected");
-    kingsocket = socket;
-
     socket.on("page", (data) => {
-        console.log(data);
-        // show all socket
+        let val = { ...socket, state: { page: data.page } }
+        console.log(val.state.page)
     })
 
-    // define function such that when called, it emits data to all clients
     socket.on("disconnect", () => {
         console.log("User disconnected");
     });
 });
 
-myFunctions = (u) => {
-    mysocket.emit("data-exchange", { date: new Date(), data: u });
-};
 
 
-setInterval(() => {
-    if (myFunctions !== null) {
-        myFunctions("Hello from server");
-        console.log("sent");
-    }
-}, 1000);
 
 

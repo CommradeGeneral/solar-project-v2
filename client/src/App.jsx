@@ -69,7 +69,7 @@ function App() {
 
   useEffect(() => {
     if (isSocketConnected) {
-      socket.emit("page", { clientId: socket.id, page });
+      socket.emit("page", { clientId: socket.id, page: page });
       return;
     };
     const mysocket = io("ws://192.168.100.13:3000");
