@@ -23,6 +23,7 @@ class ModbusClient extends EventEmitter {
 
     constructor({
         protocol = "tcp",
+        deviceName = "",
         ip = "127.0.0.1",
         port = 502,
         serialPort = "COM1",
@@ -35,8 +36,10 @@ class ModbusClient extends EventEmitter {
         stopbits = 1,
         T_value = 2500,
         autoReconnect = true,
+        loopTimeout = null
     }) {
         super();
+        this.deviceName = deviceName;
         this.client = new ModbusRTU();
         this.protocol = protocol;
         this.serialPort = serialPort;
@@ -51,6 +54,7 @@ class ModbusClient extends EventEmitter {
         this.isLogger = isLogger;
         this.T_value = T_value;
         this.autoReconnect = autoReconnect;
+        this.loopTimeout = loopTimeout || timeout;
 
         // State machine
         this.state = STATE.DISCONNECTED;
@@ -264,10 +268,66 @@ class ModbusClient extends EventEmitter {
         return this.disconnect();
     }
 
+    init(memList = []) {
+        this.memList = memList;
+        // Create a new buffer for the response data
+        this.onConn = () => {
+            console.log("[onConn] Starting poll loop…");
+            for (let uu = 0; uu < memList.length; uu++) {
+                memList[uu].timestamp = new Date();
+                memList[uu].status = 0;
+                memList[uu].penalty = 0;
+
+            }
+            this.addPollTimer(100, async () => {
+                // Skip if not connected (reconnect may be in progress)
+                if (inverter1.state !== STATE.CONNECTED) return;
+
+                for (const mem of memList) {
+                    // prevent await
+                    let values = null;
+                    if (mem.status != 0 && mem.status != 2) continue;
+                    mem.status = mem.status + 1;
+
+                    await this.readMemSpace(mem.slave_id, mem.read).then((data) => {
+                        console.log("mem.slave_id: ", mem.slave_id);
+                        values = data;
+                        mem.read.forEach((read, i) => { read.buffer = values[i]; });
+                        mem.timestamp = new Date();
+                        if (mem.penalty > 0) mem.penalty--;
+                        mem.status = 2;
+                        //console.log(`Slave ${mem.slave_id}:`, "Len: ", values.length, ",penality: ", mem.penalty);
+                    }).catch((err) => {
+
+                        if (err.errno === "ETIMEDOUT" || err.modbusCode === 1) {
+                            if (mem.penalty < 20) mem.penalty++;
+                            // wait 1 sec before next read from this slave
+                            //console.log(err);
+                        }
+                        console.error(`[poll] Error reading slave ${mem.slave_id}:`, "penality: ", mem.penalty);
+                        let timeout = setTimeout(() => {
+                            //console.log('delay over')
+                            mem.status = 0;
+                            clearTimeout(timeout);
+                        }, 1000);
+
+                        if (err.errno == "ECONNREFUSED") {
+                            if (timeout) clearTimeout(timeout);
+                            console.log("forcing reconnect")
+                            inverter1._onDisconnected(err);
+                        }
+                    })
+                }
+            });
+        };
+
+
+
+    }
 }
 
 // ─── Example usage ─────────────────────────────────────────────────────────────
-
+/*
 const inverter1 = new ModbusClient({
     protocol: "tcp",
     ip: "127.0.0.2",
@@ -408,4 +468,5 @@ try {
                 }
                 break; // stop polling this cycle
             }
-                */
+                
+*/
