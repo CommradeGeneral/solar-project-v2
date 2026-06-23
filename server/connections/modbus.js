@@ -28,7 +28,7 @@ class ModbusClient extends EventEmitter {
         serialPort = "COM1",
         isLogger = false,
         slaveId = 1,
-        timeout = 5000,
+        timeout = 3000,
         baudrate = 9600,
         databits = 8,
         parity = "none",
@@ -124,6 +124,7 @@ class ModbusClient extends EventEmitter {
         this.client.setID(id);
         const promises = dataArr.map((item) => {
             switch (item.fc) {
+                // using FC1, FC2, ...
                 case 1: return this.client.readCoils(item.start_addr, item.quantity)
                     .then((v) => v.buffer);
                 case 2: return this.client.readDiscreteInputs(item.start_addr, item.quantity)
@@ -236,6 +237,33 @@ class ModbusClient extends EventEmitter {
         console.error(`[ModbusClient ${this.ip}:${this.port}] Gave up reconnecting after ${this._reconnectAttempts} attempts.`);
         this.emit("reconnectFailed", this._reconnectAttempts);
     }
+
+    /** Clean stop: stop polling, close socket, prevent reconnects */
+    close() {
+        // prevent any further automatic reconnects
+        this._autoReconnect = false;
+
+        // clear any pending reconnect timer
+        if (this._reconnectTimer) {
+            clearTimeout(this._reconnectTimer);
+            this._reconnectTimer = null;
+        }
+
+        // stop polling timer
+        if (this._pollTimer) {
+            clearInterval(this._pollTimer);
+            this._pollTimer = null;
+        }
+
+        // if we were in the middle of a reconnect sequence, abort that
+        this._reconnecting = false;
+
+        // clear any pending reconnect Promise
+        this._connectPromise = null;
+
+        return this.disconnect();
+    }
+
 }
 
 // ─── Example usage ─────────────────────────────────────────────────────────────
@@ -273,37 +301,60 @@ inverter1.on("connectionLost", (reason) => {
 // ── Define what to do once connected (or reconnected) ─────────────────────────
 
 let memList = [
-
-    { slave_id: 3, read: [{ fc: 4, start_addr: 0, quantity: 50 }], penalty: 0 },
-
+    { slave_id: 1, read: [{ fc: 4, start_addr: 0, quantity: 50 }], penalty: 0, status: 0 },
+    { slave_id: 2, read: [{ fc: 4, start_addr: 0, quantity: 50 }], penalty: 0, status: 0 },
+    { slave_id: 3, read: [{ fc: 4, start_addr: 0, quantity: 50 }], penalty: 0, status: 0 },
+    { slave_id: 4, read: [{ fc: 4, start_addr: 0, quantity: 50 }], penalty: 0, status: 0 },
+    { slave_id: 13, read: [{ fc: 4, start_addr: 0, quantity: 50 }], penalty: 0, status: 0 },
 ];
 
 inverter1.onConn = () => {
     console.log("[onConn] Starting poll loop…");
+    for (let uu = 0; uu < memList.length; uu++) {
+        memList[uu].timestamp = new Date();
+        memList[uu].status = 0;
+        memList[uu].penalty = 0;
 
-    inverter1.addPollTimer(500, async () => {
+    }
+    inverter1.addPollTimer(100, async () => {
         // Skip if not connected (reconnect may be in progress)
         if (inverter1.state !== STATE.CONNECTED) return;
 
         for (const mem of memList) {
             // prevent await
             let values = null;
-            inverter1.readMemSpace(mem.slave_id, mem.read).then((data) => {
+            if (mem.status != 0 && mem.status != 2) continue;
+            mem.status = mem.status + 1;
+
+            await inverter1.readMemSpace(mem.slave_id, mem.read).then((data) => {
+                console.log("mem.slave_id: ", mem.slave_id);
                 values = data;
                 mem.read.forEach((read, i) => { read.buffer = values[i]; });
+                mem.timestamp = new Date();
                 if (mem.penalty > 0) mem.penalty--;
-                console.log(`Slave ${mem.slave_id}:`, "Len: ", values.length, ",penality: ", mem.penalty);
+                mem.status = 2;
+                //console.log(`Slave ${mem.slave_id}:`, "Len: ", values.length, ",penality: ", mem.penalty);
             }).catch((err) => {
-                console.error(`[poll] Error reading slave ${mem.slave_id}:`, err.message, "penality: ", mem.penalty);
-                if (err.errno === "ETIMEDOUT") {
+
+                if (err.errno === "ETIMEDOUT" || err.modbusCode === 1) {
                     if (mem.penalty < 20) mem.penalty++;
-                    return;
+                    // wait 1 sec before next read from this slave
                     //console.log(err);
                 }
-                if (inverter1.state === STATE.CONNECTED) {
+                console.error(`[poll] Error reading slave ${mem.slave_id}:`, "penality: ", mem.penalty);
+                let timeout = setTimeout(() => {
+                    //console.log('delay over')
+                    mem.status = 0;
+                    clearTimeout(timeout);
+                }, 1000);
+
+                if (err.errno == "ECONNREFUSED") {
+                    if (timeout) clearTimeout(timeout);
+                    console.log("forcing reconnect")
                     inverter1._onDisconnected(err);
                 }
-            });
+            })
+
 
             // Let the transport error / close event drive reconnection.
             // If the client is still "connected" but reads are failing,
@@ -319,11 +370,11 @@ inverter1.onConn = () => {
 
 inverter1.connect()
     .then(() => {
-        console.log("[main] Initial connection established.");
+        //console.log("[main] Initial connection established.");
         inverter1.onConn();
     })
     .catch((err) => {
-        console.error("[main] Initial connection failed:", err.message);
+        //console.error("[main] Initial connection failed:", err.message);
         // Kick off the reconnect loop manually on first-connect failure
         inverter1._onDisconnected(err);
     });
