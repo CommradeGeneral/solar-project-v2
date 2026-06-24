@@ -1,7 +1,17 @@
 import MainCards from "../../utilities/MainCard";
 import { useEffect, useState } from "react";
 
-function Overview({ dir, cardsData }) {
+function Overview({ dir, cardsData, socket }) {
+
+    useEffect(() => {
+        if (socket.current)
+            socket.current.emit("page", [{ deviceID: "EM001", startFrom: 1, length: 10 },])
+        /*deviceID: "EM001",
+         *  startFrom: n
+         *  length: len
+         * */
+        //[{ deviceID: "EM001", startFrom: 1, length: 10 },]
+    }, [])
 
     return (
         <div className="" style={{

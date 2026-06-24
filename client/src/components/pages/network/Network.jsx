@@ -6,9 +6,13 @@ import './Network.css'
 
 import { io } from "socket.io-client";
 
-function Network() {
+function Network({ socket }) {
     const svgRef = useRef(null);
-
+    useEffect(() => {
+        socket.current.on("page-2", (data) => {
+            console.log(data);
+        })
+    }, []);
     return (
         <TransformWrapper
             initialScale={1}
