@@ -47,8 +47,4 @@ app.get("/", (req, res) => {
 
 app.listen(8000, "192.168.1.230", () => {
     console.log("Server started on port 8000");
-=======
-app.listen(8000, "192.168.100.13", () => {
-    console.log("Server started on port 5050");
->>>>>>> d04ea8102db06ce292d150c4c527ae5c82494212
 });
