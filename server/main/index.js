@@ -19,6 +19,10 @@ app.get("/favicon.svg", (req, res) => {
     res.sendFile(path.join(__dirname, "../../client/dist/favicon.svg"));
 });
 
+app.get("/unjustking.svg", (req, res) => {
+    res.sendFile(path.join(__dirname, "../../client/dist/unjustking.svg"));
+});
+
 app.use(express.static(path.join(__dirname, "../../client/dist")));
 
 //app.use(express.static(path.join(__dirname, "../../client/dist/favicon.svg")));
@@ -43,4 +47,8 @@ app.get("/", (req, res) => {
 
 app.listen(8000, "192.168.1.230", () => {
     console.log("Server started on port 8000");
+=======
+app.listen(8000, "192.168.100.13", () => {
+    console.log("Server started on port 5050");
+>>>>>>> d04ea8102db06ce292d150c4c527ae5c82494212
 });
