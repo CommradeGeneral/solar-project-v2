@@ -4,13 +4,15 @@ import { useEffect, useState } from "react";
 function Overview({ dir, cardsData, socket }) {
 
     useEffect(() => {
-        if (socket.current)
-            socket.current.emit("page", [{ deviceID: "EM001", startFrom: 1, length: 10 },])
-        /*deviceID: "EM001",
-         *  startFrom: n
-         *  length: len
-         * */
-        //[{ deviceID: "EM001", startFrom: 1, length: 10 },]
+        if (socket.current) {
+            console.log("overview socket")
+            socket.current.emit("page", [
+                { deviceID: "EM001", startFrom: 0, length: 10 },
+                { deviceID: "EM002", startFrom: 0, length: 10 },
+                { deviceID: "EM003", startFrom: 0, length: 10 },
+            ])
+        }
+
     }, [])
 
     return (

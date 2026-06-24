@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import { Modbusdevices } from "./deviceMap.js";
 
 const mysocket = new Server(8500, {
     cors: {
@@ -7,9 +8,8 @@ const mysocket = new Server(8500, {
     }
 });
 
-let socketGrp = new Map();
-
 mysocket.on("connection", (socket) => {
+    console.log("User connected")
     let currentPage = 0;
     let interval = null;
     let socketDevices = [];
@@ -24,47 +24,48 @@ mysocket.on("connection", (socket) => {
          * Modbusdevices[deviceID].socketClients.set(socket.id, {socket: socket, startFrom: n len: len})
          * socketDevices.push(deviceID)
          */
-        console.log(data)
+
         data.forEach((item) => {
+            console.log(data);
             Modbusdevices[item.deviceID].socketClients.set(socket.id, { socket: socket, startFrom: item.startFrom, len: item.length })
             socketDevices.push(item.deviceID)
         })
-        console.log(Modbusdevices)
+        socketDevices.forEach((deviceID) => {
+            // just print socket id for each device
+            console.log(`deviceID : ${deviceID} => `, Modbusdevices[deviceID].socketClients.keys())
+        })
+
     })
 
     socket.on("disconnect", () => {
         console.log("User disconnected");
-        //socketGrp.delete(socket.id);
-        console.log(socketGrp);
+        //socketGrp.delete(item.deviceID);
         socketDevices.forEach((deviceID) => {
             Modbusdevices[deviceID].socketClients.delete(socket.id);
         })
+        socketDevices.forEach((deviceID) => {
+            // just print socket id for each device
+            console.log(`deviceID : ${deviceID} => `, Modbusdevices[deviceID].socketClients.keys())
+        })
+        socketDevices = [];
 
     });
 });
 
 
+setInterval(() => {
+    for (let mod of Object.keys(Modbusdevices)) {
+        //console.log(mod)
+        try {
+            Modbusdevices[mod].buffer.writeInt16LE(Math.random() * 1000, 0)
+            Modbusdevices[mod].socketClients.forEach((client) => {
+                console.log(client)
 
-const kingsmodbus = new ModbusClient({
-    protocol: "tcp",
-    ip: "127.0.0.2",
-    port: 502,
-    slaveId: 2,
-    timeout: 1000,
-    baudrate: 9600,
-    databits: 8,
-    parity: "none",
-    stopbits: 1,
-});
+            })
+        } catch (error) {
+        }
+    }
+}, 5000)
 
 
-kingsmodbus.client.on('close', () => {
-    console.log("Modbus disconnected");
-    kingsmodbus.connect();
-
-})
-
-kingsmodbus.client.on('error', (error) => {
-    console.log("Modbus error", error);
-})
 

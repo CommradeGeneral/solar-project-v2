@@ -11,14 +11,14 @@ import Network from './components/pages/network/Network'
 
 import { io } from "socket.io-client";
 
-let database = {};
 
 function App() {
   const [dir, setDir] = useState({ lang: 'en', dir: 'ltr' });
   const [page, setPage] = useState(0);
   const [socket, setSocket] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const socketRef = useRef(null);
 
 
 
@@ -82,21 +82,29 @@ function App() {
       }, 2000);
     }
     if (isSocketConnected) {
-      //socket.emit("page", { clientId: socket.id, page: page });
+
+      setIsLoading(false);
       return;
     };
-    const mysocket = io("ws://localhost:3000");
+    const mysocket = io("ws://192.168.1.230:8500");
 
     mysocket.on("connect", () => {
       console.log("Connected to server", mysocket.id);
       setSocket(mysocket);
       setIsSocketConnected(true);
+      setPage(0);
+      //mysocket.emit("page", [{ deviceID: "EM001", startFrom: 0, len: 20 }]);
       //socket.emit("page", { clientId: socket.id, page: page });
 
       /*mysocket.on("data-exchange", (data) => {
         database = { ...database, ...data };
       })*/
+
     });
+
+    mysocket.on("data-received", (data) => {
+      console.log(data)
+    })
 
 
 
@@ -134,13 +142,12 @@ function App() {
           boxSizing: 'border-box',
           placeContent: 'center'
         }}>
-          {!isLoading ? <h2> {{ en: "loading", ar: "جاري التحميل" }[dir.lang]} </h2> : (() => {
-            console.log('page', page)
+          {false ? <h2> {{ en: "loading", ar: "جاري التحميل" }[dir.lang]} </h2> : (() => {
             switch (page) {
               case 0:
-                return <Overview dir={dir} cardsData={cardsData} />
+                return <Overview dir={dir} cardsData={cardsData} socket={socketRef} />
               case 1:
-                return <Network />
+                return <Network dir={dir} socket={socketRef} />
               default:
                 return <h1>2</h1>
             }
