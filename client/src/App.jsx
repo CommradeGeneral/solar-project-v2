@@ -18,7 +18,7 @@ function App() {
   const [page, setPage] = useState(0);
   const [socket, setSocket] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
 
 
 
@@ -72,11 +72,20 @@ function App() {
   ]
 
   useEffect(() => {
+    let timeout = null;
+
+
+    if (!isSocketConnected) {
+      timeout = setTimeout(() => {
+        //setIsLoading(true);
+        clearTimeout(timeout);
+      }, 2000);
+    }
     if (isSocketConnected) {
       socket.emit("page", { clientId: socket.id, page });
       return;
     };
-    const mysocket = io("ws://localhost:3000");
+    const mysocket = io("ws://192.168.1.230:8500");
 
     mysocket.on("connect", () => {
       console.log("Connected to server", mysocket.id);
@@ -97,7 +106,9 @@ function App() {
 
     return () => {
       if (isSocketConnected) mysocket.disconnect();
+      clearTimeout(timeout);
     };
+
   }, [page, isSocketConnected]);
 
 
@@ -113,7 +124,7 @@ function App() {
   ]
   return (
     <>
-      <MainPage dir={dir} setDir={setDir} page={page} setPage={setPage}>
+      <MainPage dir={dir} setDir={setDir} page={page} setPage={setPage} setIsLoading={setIsLoading} isLoading={isLoading}>
         <div className="" style={{
           width: "100%",
           height: "100%",
@@ -121,7 +132,17 @@ function App() {
           boxSizing: 'border-box',
           placeContent: 'center'
         }}>
-          {pages[page]}
+          {!isLoading ? <h2> {{ en: "loading", ar: "جاري التحميل" }[dir.lang]} </h2> : (() => {
+            console.log('page', page)
+            switch (page) {
+              case 0:
+                return <Overview dir={dir} cardsData={cardsData} />
+              case 1:
+                return <Network />
+              default:
+                return <h1>2</h1>
+            }
+          })()}
         </div>
 
       </MainPage>
