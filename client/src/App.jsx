@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
@@ -18,7 +18,7 @@ function App() {
   const [page, setPage] = useState(0);
   const [socket, setSocket] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
 
 
 
@@ -82,20 +82,20 @@ function App() {
       }, 2000);
     }
     if (isSocketConnected) {
-      socket.emit("page", { clientId: socket.id, page });
+      //socket.emit("page", { clientId: socket.id, page: page });
       return;
     };
-    const mysocket = io("ws://192.168.1.230:8500");
+    const mysocket = io("ws://localhost:3000");
 
     mysocket.on("connect", () => {
       console.log("Connected to server", mysocket.id);
       setSocket(mysocket);
       setIsSocketConnected(true);
+      //socket.emit("page", { clientId: socket.id, page: page });
 
-      mysocket.on("data-exchange", (data) => {
+      /*mysocket.on("data-exchange", (data) => {
         database = { ...database, ...data };
-        console.log(database);
-      })
+      })*/
     });
 
 
@@ -103,6 +103,8 @@ function App() {
     mysocket.on("disconnect", () => {
       console.log("Disconnected from server");
     });
+
+    socketRef.current = mysocket;
 
     return () => {
       if (isSocketConnected) mysocket.disconnect();
@@ -115,8 +117,8 @@ function App() {
 
 
   const pages = [
-    <Overview dir={dir} cardsData={cardsData} />,
-    <Network />,
+    <Overview dir={dir} cardsData={cardsData} socket={socketRef} />,
+    <Network dir={dir} socket={socketRef} />,
     <h1>2</h1>,
     <h1>3</h1>,
     <h1>4</h1>,
