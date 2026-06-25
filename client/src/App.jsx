@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useReducer } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
@@ -18,8 +18,22 @@ function App() {
   const [page, setPage] = useState(0);
   const [socket, setSocket] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-
   const socketRef = useRef(null);
+  const refresgincCbk = useRef(null);
+  const [firstLoad, setFirstLoad] = useState(false);
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
+  const [rand, setRand] = useState(Math.random());
+  const [lastData, setLastData] = useState(null);
+  const DBRef = useRef({
+    "EM001": { start: 10, length: 20, buffer: new Uint16Array(100) },
+    "EM002": { start: 10, length: 20, buffer: new Uint16Array(100) },
+    "EM003": { start: 10, length: 20, buffer: new Uint16Array(100) },
+    "EM004": { start: 10, length: 20, buffer: new Uint16Array(100) },
+    "EM005": { start: 10, length: 20, buffer: new Uint16Array(100) },
+    "EM006": { start: 10, length: 20, buffer: new Uint16Array(100) },
+    "EM007": { start: 10, length: 20, buffer: new Uint16Array(100) },
+    "EM008": { start: 10, length: 20, buffer: new Uint16Array(100) },
+  })
 
   const cardsData = [
     {
@@ -70,22 +84,53 @@ function App() {
   ]
 
   useEffect(() => {
+    console.log('rand', rand)
+    setRand(Math.random())
     if (isSocketConnected) {
       //socket.emit("page", { clientId: socket.id, page: page });
       return;
     };
+    setFirstLoad(true);
     let mysocket = io("ws://192.168.100.13:3000");
 
     mysocket.on("connect", () => {
-      console.log("Connected to server", mysocket.id);
+      console.log("Connected to server", mysocket.id, ' timestamp', new Date().toLocaleTimeString());
       setSocket(mysocket);
       setIsSocketConnected(true);
+      let count = 0;
+      // mysocket.on("refresh", (data) => {
+      console.log('page: ', page);
+      console.log(lastData)
+      if (lastData != null)
+        mysocket.emit("page", lastData);
+      //})
+      if (refresgincCbk.current) {
+        refresgincCbk.current();
+      }
       //socket.emit("page", { clientId: socket.id, page: page });
 
       /*mysocket.on("data-exchange", (data) => {
         database = { ...database, ...data };
       })*/
     });
+
+
+
+    mysocket.on("data-exchange", (data) => {
+      //DBRef.current[data.deviceID].buffer.set(data.buff, data.startFrom);
+      //modify DBRef.current[data.deviceID].buffer with data in range [data.startFrom, data.startFrom + data.length]
+      const uint16buff = new Uint16Array(data.buff);
+      for (let i = 0; i < data.length; i++) {
+        // convert databuf into UINT16
+        DBRef.current[data.deviceID[1]].buffer[i + data.startFrom] = uint16buff[i];
+      }
+      console.log(data.deviceID[1], ':', DBRef.current)
+      //console.log(data);
+      //console.log("data", DBRef.current);
+      if (refresgincCbk.current) {
+        refresgincCbk.current();
+      }
+    })
 
 
 
@@ -97,6 +142,7 @@ function App() {
 
     return () => {
       if (isSocketConnected) mysocket.disconnect();
+      setFirstLoad(false);
     };
   }, [page, isSocketConnected]);
 
@@ -104,8 +150,8 @@ function App() {
 
 
   const pages = [
-    <Overview dir={dir} cardsData={cardsData} socket={socketRef} />,
-    <Network dir={dir} socket={socketRef} />,
+    <Overview dir={dir} cardsData={cardsData} socket={socketRef} refreshincCbk={refresgincCbk} />,
+    <Network setLastData={setLastData} key={rand} dir={dir} socket={socketRef} refreshincCbk={refresgincCbk} buffRef={DBRef} />,
     <h1>2</h1>,
     <h1>3</h1>,
     <h1>4</h1>,
@@ -121,7 +167,7 @@ function App() {
           boxSizing: 'border-box',
           placeContent: 'center'
         }}>
-          {pages[page]}
+          {!isSocketConnected ? <div className=""></div> : pages[page]}
         </div>
 
       </MainPage>

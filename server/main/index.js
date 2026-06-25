@@ -32,3 +32,7 @@ app.use("/main", router);
 app.listen(8000, "192.168.100.13", () => {
     console.log("Server started on port 5050");
 });
+
+process.on('message', (data) => {
+    console.log('--->')
+})
