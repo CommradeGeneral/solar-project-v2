@@ -45,7 +45,7 @@ app.get("/", (req, res) => {
     console.log(req.headers.get('sec-fetch-site'));
 });
 
-app.listen(8000, "192.168.1.230", () => {
+app.listen(8000, "192.168.100.13", () => {
     console.log("Server started on port 8000");
 });
 
