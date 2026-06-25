@@ -1,18 +1,15 @@
 import MainCards from "../../utilities/MainCard";
 import { useEffect, useState } from "react";
 
-function Overview({ dir, cardsData, socket }) {
+function Overview({ dir, cardsData, socket, refreshincCbk }) {
 
     useEffect(() => {
-        if (socket.current) {
-            console.log("overview socket")
+        refreshincCbk.current = () => { }
+        if (socket.current)
             socket.current.emit("page", [
-                { deviceID: "EM001", startFrom: 0, length: 10 },
-                { deviceID: "EM002", startFrom: 0, length: 10 },
-                { deviceID: "EM003", startFrom: 0, length: 10 },
+                /*{ deviceID: ["LOG001", "EM002"], startFrom: 0, length: 3 },
+                { deviceID: ["LOG001", "EM004"], startFrom: 1, length: 1 },*/
             ])
-        }
-
     }, [])
 
     return (

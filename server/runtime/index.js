@@ -1,5 +1,10 @@
 import { Server } from "socket.io";
-import { Modbusdevices } from "./deviceMap.js";
+import { fork } from "child_process";
+import { fileURLToPath } from 'url';
+import { dirname, join, resolve } from 'path';
+
+import ModBusDevices from "./database.js";
+
 
 const mysocket = new Server(8500, {
     cors: {
@@ -8,11 +13,14 @@ const mysocket = new Server(8500, {
     }
 });
 
+
 mysocket.on("connection", (socket) => {
     console.log("User connected")
     let currentPage = 0;
     let interval = null;
     let socketDevices = [];
+    let last_data = null;
+
     socket.on("page", (data) => {
         /**
          * data [j] = {
@@ -24,48 +32,112 @@ mysocket.on("connection", (socket) => {
          * Modbusdevices[deviceID].socketClients.set(socket.id, {socket: socket, startFrom: n len: len})
          * socketDevices.push(deviceID)
          */
-
+        //console.log(socket.id, `=>`, data)
+        console.log(socket.id, 'ModBusDevices[logger].devices[device]')
+        // first: clear socket from all modbus 
+        Object.values(ModBusDevices).forEach(item => {
+            Object.values(item.devices).forEach(device => {
+                device.socketClients.delete(socket.id);
+            })
+        })
+        last_data = data;
+        if (data == null) return;
         data.forEach((item) => {
-            console.log(data);
-            Modbusdevices[item.deviceID].socketClients.set(socket.id, { socket: socket, startFrom: item.startFrom, len: item.length })
-            socketDevices.push(item.deviceID)
+            let { deviceID, startFrom, length } = item;
+            if (deviceID == null) return;
+            let logger = deviceID[0];
+            let device = deviceID[1];
+            //console.log(ModBusDevices[logger].devices[device]);
+            let obj = ModBusDevices[logger].devices[device];
+            //console.log("Line 1: ", obj.socketClients);
+            obj.socketClients.set(socket.id, {
+                socket: socket,
+                id: socket.id,
+                startFrom: startFrom,
+                length: length
+            });
+            // add socket to map 
+
+            socketDevices.push(deviceID);
         })
-        socketDevices.forEach((deviceID) => {
-            // just print socket id for each device
-            console.log(`deviceID : ${deviceID} => `, Modbusdevices[deviceID].socketClients.keys())
-        })
+
+
+
+        /*Object.values(ModBusDevices).forEach(item => {
+            Object.values(item.devices).forEach(device => {
+                console.log(device.name, ':\t')
+                for (let socketClients of device.socketClients.values()) {
+                    console.log('\tID:', socketClients.id);
+                    console.log('\tstartFrom:', socketClients.startFrom);
+                    console.log('\tlength:', socketClients.length);
+                    // if not last, print , 
+                    if (socketClients.id !== device.socketClients.values().next().value.id) {
+                        console.log('\t----------------------------------------------');
+                    }
+                }
+            })
+        })*/
+
 
     })
+    if (last_data != null) {
+        socket.emit("refresh", last_data);
+    }
 
     socket.on("disconnect", () => {
         console.log("User disconnected");
-        //socketGrp.delete(item.deviceID);
         socketDevices.forEach((deviceID) => {
-            Modbusdevices[deviceID].socketClients.delete(socket.id);
+            let logger = deviceID[0];
+            let device = deviceID[1];
+            ModBusDevices[logger].devices[device].socketClients.delete(socket.id);
         })
-        socketDevices.forEach((deviceID) => {
-            // just print socket id for each device
-            console.log(`deviceID : ${deviceID} => `, Modbusdevices[deviceID].socketClients.keys())
-        })
-        socketDevices = [];
-
     });
 });
 
 
 setInterval(() => {
-    for (let mod of Object.keys(Modbusdevices)) {
-        //console.log(mod)
-        try {
-            Modbusdevices[mod].buffer.writeInt16LE(Math.random() * 1000, 0)
-            Modbusdevices[mod].socketClients.forEach((client) => {
-                console.log(client)
+    Object.keys(ModBusDevices).forEach(key => {
+        Object.keys(ModBusDevices[key].devices).forEach(device => {
+            // generate fake data
+            let deviceData = ModBusDevices[key].devices[device];
+            let buff = deviceData.buff;
+            for (let i = 0; i < buff.length; i++) {
+                buff[i] = Math.floor(Math.random() * 0x10000);
+            }
+            //console.log({ key, device })
+            // send the whole buffer to another service via IPC
+
+
+            // loop on available sockets
+            ModBusDevices[key].devices[device].socketClients.values().forEach((socketObject) => {
+                //console.log(ModBusDevices[key].devices[device].socketClients)
+                let startFrom = socketObject.startFrom;
+                let length = socketObject.length;
+                let data = buff.slice(startFrom, startFrom + length);
+                console.log({ id: socketObject.id, startFrom: startFrom, length: length, deviceID: [key, device], buff: buff })
+                /*console.log({
+                    deviceID: [key, device],
+                    buff: data,
+                    startFrom: startFrom,
+                    length: length
+                })*/
+                socketObject.socket.emit("data-exchange", {
+                    deviceID: [key, device],
+                    buff: data,
+                    startFrom: startFrom,
+                    length: length
+                })
+
 
             })
-        } catch (error) {
-        }
-    }
-}, 5000)
+        })
+    })
+}, 100);
+
+
+
+
+
 
 
 

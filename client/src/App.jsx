@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useReducer } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
@@ -17,11 +17,8 @@ function App() {
   const [page, setPage] = useState(0);
   const [socket, setSocket] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
   const socketRef = useRef(null);
-
-
-
 
   const cardsData = [
     {
@@ -72,28 +69,27 @@ function App() {
   ]
 
   useEffect(() => {
-    let timeout = null;
-
-
-    if (!isSocketConnected) {
-      timeout = setTimeout(() => {
-        //setIsLoading(true);
-        clearTimeout(timeout);
-      }, 2000);
-    }
     if (isSocketConnected) {
 
       setIsLoading(false);
       return;
     };
-    const mysocket = io("ws://192.168.1.230:8500");
+    let mysocket = io("ws://192.168.100.13:3000");
 
     mysocket.on("connect", () => {
-      console.log("Connected to server", mysocket.id);
+      console.log("Connected to server", mysocket.id, ' timestamp', new Date().toLocaleTimeString());
       setSocket(mysocket);
       setIsSocketConnected(true);
-      setPage(0);
-      //mysocket.emit("page", [{ deviceID: "EM001", startFrom: 0, len: 20 }]);
+      let count = 0;
+      // mysocket.on("refresh", (data) => {
+      console.log('page: ', page);
+      console.log(lastData)
+      if (lastData != null)
+        mysocket.emit("page", lastData);
+      //})
+      if (refresgincCbk.current) {
+        refresgincCbk.current();
+      }
       //socket.emit("page", { clientId: socket.id, page: page });
 
       /*mysocket.on("data-exchange", (data) => {
@@ -102,8 +98,22 @@ function App() {
 
     });
 
-    mysocket.on("data-received", (data) => {
-      console.log(data)
+
+
+    mysocket.on("data-exchange", (data) => {
+      //DBRef.current[data.deviceID].buffer.set(data.buff, data.startFrom);
+      //modify DBRef.current[data.deviceID].buffer with data in range [data.startFrom, data.startFrom + data.length]
+      const uint16buff = new Uint16Array(data.buff);
+      for (let i = 0; i < data.length; i++) {
+        // convert databuf into UINT16
+        DBRef.current[data.deviceID[1]].buffer[i + data.startFrom] = uint16buff[i];
+      }
+      console.log(data.deviceID[1], ':', DBRef.current)
+      //console.log(data);
+      //console.log("data", DBRef.current);
+      if (refresgincCbk.current) {
+        refresgincCbk.current();
+      }
     })
 
 
@@ -116,7 +126,6 @@ function App() {
 
     return () => {
       if (isSocketConnected) mysocket.disconnect();
-      clearTimeout(timeout);
     };
 
   }, [page, isSocketConnected]);
@@ -125,8 +134,8 @@ function App() {
 
 
   const pages = [
-    <Overview dir={dir} cardsData={cardsData} socket={socketRef} />,
-    <Network dir={dir} socket={socketRef} />,
+    <Overview dir={dir} cardsData={cardsData} socket={socketRef} refreshincCbk={refresgincCbk} />,
+    <Network setLastData={setLastData} key={rand} dir={dir} socket={socketRef} refreshincCbk={refresgincCbk} buffRef={DBRef} />,
     <h1>2</h1>,
     <h1>3</h1>,
     <h1>4</h1>,
@@ -142,16 +151,7 @@ function App() {
           boxSizing: 'border-box',
           placeContent: 'center'
         }}>
-          {false ? <h2> {{ en: "loading", ar: "جاري التحميل" }[dir.lang]} </h2> : (() => {
-            switch (page) {
-              case 0:
-                return <Overview dir={dir} cardsData={cardsData} socket={socketRef} />
-              case 1:
-                return <Network dir={dir} socket={socketRef} />
-              default:
-                return <h1>2</h1>
-            }
-          })()}
+          {pages[page]}
         </div>
 
       </MainPage>
