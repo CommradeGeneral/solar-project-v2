@@ -8,7 +8,8 @@
     "start": "node runtime/index.js",
     "dev:runtime": "node --watch runtime/index.js",
     "dev:main": "node --watch main/index.js",
-    "dev:comm": "node --watch connections/modbus.js"
+    "dev:comm": "node --watch connections/modbus.js",
+    "dev": "npm run dev:runtime & npm run dev:main"
   },
   "keywords": [],
   "author": "",

@@ -2,16 +2,24 @@ import { Server } from "socket.io";
 import { fork } from "child_process";
 import { fileURLToPath } from 'url';
 import { dirname, join, resolve } from 'path';
+import fs from 'fs';
 
 import ModBusDevices from "./database.js";
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+let config = fs.readFileSync(join(__dirname, '../config.json'));
+config = JSON.parse(config);
+const { ip, socketPort, webServerPort } = config.netwotk;
 
-const mysocket = new Server(8500, {
+
+
+const mysocket = new Server(socketPort, {
     cors: {
-        origin: ["http://localhost:5173", "http://192.168.1.230:8000"],
+        origin: ["http://localhost:5173", `http://${ip}:${webServerPort}`],
         credentials: true
     }
 });
+
 
 
 mysocket.on("connection", (socket) => {
@@ -33,7 +41,7 @@ mysocket.on("connection", (socket) => {
          * socketDevices.push(deviceID)
          */
         //console.log(socket.id, `=>`, data)
-        console.log(socket.id, 'ModBusDevices[logger].devices[device]')
+        //console.log(socket.id, 'ModBusDevices[logger].devices[device]')
         // first: clear socket from all modbus 
         Object.values(ModBusDevices).forEach(item => {
             Object.values(item.devices).forEach(device => {
@@ -43,11 +51,15 @@ mysocket.on("connection", (socket) => {
         last_data = data;
         if (data == null) return;
         data.forEach((item) => {
+            console.log(item, '-------------------------------------');
             let { deviceID, startFrom, length } = item;
             if (deviceID == null) return;
             let logger = deviceID[0];
             let device = deviceID[1];
             //console.log(ModBusDevices[logger].devices[device]);
+            //console.log(logger, "||", device, "||", ModBusDevices[logger].devices[device]);
+            //console.log(ModBusDevices)
+            //console.log(logger, "||", device)
             let obj = ModBusDevices[logger].devices[device];
             //console.log("Line 1: ", obj.socketClients);
             obj.socketClients.set(socket.id, {
@@ -114,7 +126,7 @@ setInterval(() => {
                 let startFrom = socketObject.startFrom;
                 let length = socketObject.length;
                 let data = buff.slice(startFrom, startFrom + length);
-                console.log({ id: socketObject.id, startFrom: startFrom, length: length, deviceID: [key, device], buff: buff })
+                console.log({ id: socketObject.id, startFrom: startFrom, length: length, deviceID: [key, device] })
                 /*console.log({
                     deviceID: [key, device],
                     buff: data,
@@ -128,11 +140,10 @@ setInterval(() => {
                     length: length
                 })
 
-
             })
         })
     })
-}, 100);
+}, 1000);
 
 
 

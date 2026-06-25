@@ -7,7 +7,7 @@ svg .media-converter,
 svg *[class^="laptop-"],
 svg .desktop-workstation {
     filter: brightness(30%);
-    transition: filter 1s ease-in-out;
+    transition: filter 0.2s ease-in-out;
 
     &.online {
         filter: brightness(100%);
@@ -19,7 +19,7 @@ svg *[class^="pr-"],
 svg *[class^='energy-meter-'],
 svg *[class^='ws-'] {
     cursor: pointer;
-    transition: fill 2s ease-in-out, filter 1s ease-in-out;
+    transition: fill 0.4s ease-in-out, filter 0.4s ease-in-out;
     ;
 
     &>text>tspan {

@@ -1,17 +1,24 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from 'url';
 import { Router } from "express";
 import favicon from "serve-favicon";
+import { join } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+let config = fs.readFileSync(join(__dirname, '../config.json'));
+config = JSON.parse(config);
+const { ip, socketPort, webServerPort } = config.netwotk;
+
 const app = express();
 const router = Router();
 
 app.use(cors({
-    origin: ['http://localhost:5173'],
+    origin: ["http://localhost:5173", `http://${ip}:${webServerPort}`],
     credentials: true
 }))
 
@@ -45,8 +52,8 @@ app.get("/", (req, res) => {
     console.log(req.headers.get('sec-fetch-site'));
 });
 
-app.listen(8000, "192.168.100.13", () => {
-    console.log("Server started on port 8000");
+app.listen(webServerPort, ip, () => {
+    console.log("Server started on port", webServerPort);
 });
 
 process.on('message', (data) => {

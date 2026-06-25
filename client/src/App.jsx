@@ -8,8 +8,8 @@ import Login from './components/pages/login/login'
 import MainPage from './components/pageFrame/MainPage'
 import Overview from './components/pages/overview/Overview'
 import Network from './components/pages/network/Network'
+import { io } from 'socket.io-client';
 
-import { io } from "socket.io-client";
 
 
 function App() {
@@ -17,9 +17,15 @@ function App() {
   const [page, setPage] = useState(0);
   const [socket, setSocket] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(true);
   const socketRef = useRef(null);
+  const refreshingCbk = useRef(null);
+  const DBRef = useRef({
+    "EM001": { startFrom: 0, length: 100, buffer: new Uint16Array(100) },
+    "EM002": { startFrom: 0, length: 100, buffer: new Uint16Array(100) }
 
+  });
+  const [lastData, setLastData] = useState(null);
   const cardsData = [
     {
       title: { en: 'CSS1 - East Wing', ar: 'CSS1 - الجناح الشرقي' },
@@ -69,73 +75,29 @@ function App() {
   ]
 
   useEffect(() => {
-    if (isSocketConnected) {
-
-      setIsLoading(false);
-      return;
-    };
-    let mysocket = io("ws://192.168.100.13:3000");
-
+    let mysocket = io("ws://192.168.1.230:8500");
     mysocket.on("connect", () => {
       console.log("Connected to server", mysocket.id, ' timestamp', new Date().toLocaleTimeString());
-      setSocket(mysocket);
-      setIsSocketConnected(true);
-      let count = 0;
-      // mysocket.on("refresh", (data) => {
-      console.log('page: ', page);
-      console.log(lastData)
-      if (lastData != null)
-        mysocket.emit("page", lastData);
-      //})
-      if (refresgincCbk.current) {
-        refresgincCbk.current();
-      }
-      //socket.emit("page", { clientId: socket.id, page: page });
-
-      /*mysocket.on("data-exchange", (data) => {
-        database = { ...database, ...data };
-      })*/
-
+      mysocket.emit("page", [
+        { deviceID: ["LOG001", "EM003"], startFrom: 8, length: 1 },
+      ]);
+      mysocket.on("data-exchange", (data) => {
+        console.log("main socket recieves");
+      });
     });
 
-
-
-    mysocket.on("data-exchange", (data) => {
-      //DBRef.current[data.deviceID].buffer.set(data.buff, data.startFrom);
-      //modify DBRef.current[data.deviceID].buffer with data in range [data.startFrom, data.startFrom + data.length]
-      const uint16buff = new Uint16Array(data.buff);
-      for (let i = 0; i < data.length; i++) {
-        // convert databuf into UINT16
-        DBRef.current[data.deviceID[1]].buffer[i + data.startFrom] = uint16buff[i];
-      }
-      console.log(data.deviceID[1], ':', DBRef.current)
-      //console.log(data);
-      //console.log("data", DBRef.current);
-      if (refresgincCbk.current) {
-        refresgincCbk.current();
-      }
-    })
-
-
-
-    mysocket.on("disconnect", () => {
-      console.log("Disconnected from server");
-    });
-
-    socketRef.current = mysocket;
 
     return () => {
-      if (isSocketConnected) mysocket.disconnect();
-    };
-
-  }, [page, isSocketConnected]);
-
+      console.log('Network unloaded')
+      mysocket.disconnect();
+    }
+  }, [])
 
 
 
   const pages = [
-    <Overview dir={dir} cardsData={cardsData} socket={socketRef} refreshincCbk={refresgincCbk} />,
-    <Network setLastData={setLastData} key={rand} dir={dir} socket={socketRef} refreshincCbk={refresgincCbk} buffRef={DBRef} />,
+    <Overview dir={dir} cardsData={cardsData} socket={socketRef} refreshincCbk={refreshingCbk} />,
+    <Network setLastData={setLastData} dir={dir} socket={socketRef} refreshincCbk={refreshingCbk} buffRef={DBRef} />,
     <h1>2</h1>,
     <h1>3</h1>,
     <h1>4</h1>,
