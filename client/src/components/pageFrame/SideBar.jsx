@@ -62,38 +62,13 @@ function SideBar({ lang, page = 0, setPage = (index) => console.log(index), setI
             }}>
                 {list.map((item, index) => (
                     <li key={`sidebar-li-${index}`} onClick={() => {
-                        console.log("current: ", isPending.current)
-                        if (isPending.current) {
-                            try {
-                                controller.abort('aborting');
-                            } catch (e) {
-                                console.log("error: ")
-                            }
 
-                        }
-
-                        if (timeoutRef.current) {
-                            clearTimeout(timeoutRef.current);
-                        }
-                        counterRef.current++;
                         setIsLoading(false);
-                        setPage(index);
-                        isPending.current = true;
-                        timeoutRef.current = setTimeout(() => {
-                            setIsLoading(true);
-                            clearTimeout(timeoutRef.current);
-                            isPending.current = false;
-                        }, 5000);
-                        fetch('http://192.168.1.230:8000/blab', { signal: controller.signal }).then((res) => {
-                            console.log(res);
-                            setIsLoading(true);
-                            clearTimeout(timeoutRef.current);
-                        }).catch((err) => {
-                            setIsLoading(true);
-                            clearTimeout(timeoutRef.current);
-                        }).finally(() => {
-                            isPending.current = false;
-                        });
+                        if (index != page) {
+                            setPage(index);
+                        }
+
+
                     }} className={`sidebar-li ${index == page ? 'chosen' : ''}`} style={{
                     }}>
                         {item.icon}

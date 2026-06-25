@@ -36,7 +36,7 @@ function Network({ dir, socket, refreshincCbk, buffRef, setLastData }) {
                 }
                 let val = buffRef.current["EM001"].buffer[3]
                 //svgRef.current.querySelector('.' + `pr-01`).classList.add('online')
-
+                if (!svgRef.current) return;
                 for (let i = 1; i <= 14; i++) {
                     if ((val & (1 << (i - 1))) != 0) {
                         svgRef.current.querySelector('.' + `pr-${i.toString().padStart(2, '0')}`).classList.add('online');
