@@ -10,7 +10,7 @@ import NavBar from "./NavBar";
 
 import SideBar from "./SideBar";
 
-function MainPage({ children, style, dir, setDir, page, setPage }) {
+function MainPage({ children, style, dir, setDir, page, setPage, setIsLoading, isLoading }) {
     const [sideBarStatus, setSideBarStatus] = useState(true);
     const [changeWidth, setChangeWidth] = useState(false);
     const [sideBarWidth, setSideBarWidth] = useState(230);
@@ -146,7 +146,7 @@ function MainPage({ children, style, dir, setDir, page, setPage }) {
                         backgroundColor: 'rgba(0, 7, 143, 0.5)',
                         position: "absolute",
                     }}>
-                        <SideBar lang={dir} page={page} setPage={setPage} />
+                        <SideBar lang={dir} page={page} setPage={setPage} setIsLoading={setIsLoading} isLoading={isLoading} />
                     </div>
 
                 </div>

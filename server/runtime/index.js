@@ -6,9 +6,9 @@ import { dirname, join, resolve } from 'path';
 import ModBusDevices from "./database.js";
 
 
-const mysocket = new Server(3000, {
+const mysocket = new Server(8500, {
     cors: {
-        origin: ["http://localhost:5173", "http://192.168.100.13:8000",],
+        origin: ["http://localhost:5173", "http://192.168.1.230:8000"],
         credentials: true
     }
 });

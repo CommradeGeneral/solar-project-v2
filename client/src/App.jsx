@@ -18,22 +18,8 @@ function App() {
   const [page, setPage] = useState(0);
   const [socket, setSocket] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
+
   const socketRef = useRef(null);
-  const refresgincCbk = useRef(null);
-  const [firstLoad, setFirstLoad] = useState(false);
-  const [, forceUpdate] = useReducer(x => x + 1, 0);
-  const [rand, setRand] = useState(Math.random());
-  const [lastData, setLastData] = useState(null);
-  const DBRef = useRef({
-    "EM001": { start: 10, length: 20, buffer: new Uint16Array(100) },
-    "EM002": { start: 10, length: 20, buffer: new Uint16Array(100) },
-    "EM003": { start: 10, length: 20, buffer: new Uint16Array(100) },
-    "EM004": { start: 10, length: 20, buffer: new Uint16Array(100) },
-    "EM005": { start: 10, length: 20, buffer: new Uint16Array(100) },
-    "EM006": { start: 10, length: 20, buffer: new Uint16Array(100) },
-    "EM007": { start: 10, length: 20, buffer: new Uint16Array(100) },
-    "EM008": { start: 10, length: 20, buffer: new Uint16Array(100) },
-  })
 
   const cardsData = [
     {
@@ -84,13 +70,10 @@ function App() {
   ]
 
   useEffect(() => {
-    console.log('rand', rand)
-    setRand(Math.random())
     if (isSocketConnected) {
       //socket.emit("page", { clientId: socket.id, page: page });
       return;
     };
-    setFirstLoad(true);
     let mysocket = io("ws://192.168.100.13:3000");
 
     mysocket.on("connect", () => {
@@ -142,8 +125,8 @@ function App() {
 
     return () => {
       if (isSocketConnected) mysocket.disconnect();
-      setFirstLoad(false);
     };
+
   }, [page, isSocketConnected]);
 
 
@@ -159,7 +142,7 @@ function App() {
   ]
   return (
     <>
-      <MainPage dir={dir} setDir={setDir} page={page} setPage={setPage}>
+      <MainPage dir={dir} setDir={setDir} page={page} setPage={setPage} setIsLoading={setIsLoading} isLoading={isLoading}>
         <div className="" style={{
           width: "100%",
           height: "100%",
@@ -167,7 +150,7 @@ function App() {
           boxSizing: 'border-box',
           placeContent: 'center'
         }}>
-          {!isSocketConnected ? <div className=""></div> : pages[page]}
+          {pages[page]}
         </div>
 
       </MainPage>
