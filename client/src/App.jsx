@@ -9,12 +9,14 @@ import MainPage from './components/pageFrame/MainPage'
 import Overview from './components/pages/overview/Overview'
 import Network from './components/pages/network/Network'
 import { io } from 'socket.io-client';
-
-
+import { ip, socketPort, webServerPort } from './config.js';
+import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 
 function App() {
-  const [dir, setDir] = useState({ lang: 'en', dir: 'ltr' });
-  const [page, setPage] = useState(0);
+  let languageSettings = window.localStorage.getItem('language') ? JSON.parse(window.localStorage.getItem('language')) : { lang: 'en', dir: 'ltr' };
+  console.log(" language settings: ", languageSettings);
+  const [dir, setDir] = useState(languageSettings);
+  const [page, setPage] = useState('control-panel');
   const [socket, setSocket] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -74,8 +76,9 @@ function App() {
     }
   ]
 
+
   useEffect(() => {
-    let mysocket = io("ws://192.168.1.230:8500");
+    let mysocket = io(`ws://${ip}:${socketPort}`);
     mysocket.on("connect", () => {
       console.log("Connected to server", mysocket.id, ' timestamp', new Date().toLocaleTimeString());
       mysocket.emit("page", [
@@ -95,28 +98,40 @@ function App() {
 
 
 
-  const pages = [
-    <Overview dir={dir} cardsData={cardsData} socket={socketRef} refreshincCbk={refreshingCbk} />,
-    <Network setLastData={setLastData} dir={dir} socket={socketRef} refreshincCbk={refreshingCbk} buffRef={DBRef} />,
-    <h1>2</h1>,
-    <h1>3</h1>,
-    <h1>4</h1>,
-    <h1>5</h1>,
-  ]
+  const pages = {
+    "main/control-panel": <Overview dir={dir} cardsData={cardsData} socket={socketRef} refreshincCbk={refreshingCbk} />,
+    "main/network-overview": <Network setLastData={setLastData} dir={dir} socket={socketRef} refreshincCbk={refreshingCbk} buffRef={DBRef} />,
+    "main/single-line-diagram": <h1>2</h1>,
+    "main/3": <h1>3</h1>,
+    "main/devices-list/inverter": <h1>4</h1>,
+    "main/5": <h1>5</h1>,
+  }
   return (
     <>
-      <MainPage dir={dir} setDir={setDir} page={page} setPage={setPage} setIsLoading={setIsLoading} isLoading={isLoading}>
-        <div className="" style={{
-          width: "100%",
-          height: "100%",
-          padding: '10px',
-          boxSizing: 'border-box',
-          placeContent: 'center'
-        }}>
-          {pages[page]}
-        </div>
+      <BrowserRouter>
+        <MainPage dir={dir} setDir={setDir} page={page} setIsLoading={setIsLoading} isLoading={isLoading}>
+          <div className="" style={{
+            width: "100%",
+            height: "100%",
+            padding: '10px',
+            boxSizing: 'border-box',
+            placeContent: 'center'
+          }}>
 
-      </MainPage>
+            <Routes>
+              {
+                Object.keys(pages).map((key) => (
+                  <Route key={key} path={`/${key}`} element={pages[key]} />
+                ))
+              }
+              <Route path="/" element={<Navigate to="/control-panel" replace />} />
+            </Routes>
+
+
+          </div>
+
+        </MainPage>
+      </BrowserRouter>
     </>
   )
 }

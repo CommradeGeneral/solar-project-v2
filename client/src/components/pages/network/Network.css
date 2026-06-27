@@ -67,3 +67,10 @@ svg *[class^='signal-'] {
         opacity: 40%;
     }
 }
+
+
+.network-svg-wrapper>svg {
+    width: auto !important;
+    height: 100% !important;
+    margin: 0 auto;
+}

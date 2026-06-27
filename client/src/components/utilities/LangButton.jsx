@@ -2,7 +2,8 @@ import { useState, useEffect } from "react"
 import ReactCountryFlag from "react-country-flag"
 import './LangButton.css'
 function LangButton({ setDir }) {
-    const [lang, setLang] = useState(0)
+    let index = window.localStorage.getItem('languageButtonIndex') ? Number(window.localStorage.getItem('languageButtonIndex')) : 0
+    const [lang, setLang] = useState(index)
     const [listOpen, setListOpen] = useState(false)
     const Lang = [
         {
@@ -195,6 +196,8 @@ function LangButton({ setDir }) {
                             setLang(key)
                             setListOpen(false)
                             setDir({ dir: value.dir, lang: value.lang })
+                            window.localStorage.setItem('language', JSON.stringify({ dir: value.dir, lang: value.lang }));
+                            window.localStorage.setItem('languageButtonIndex', key);
                         }} style={{
                             display: "flex",
                             alignItems: "center",

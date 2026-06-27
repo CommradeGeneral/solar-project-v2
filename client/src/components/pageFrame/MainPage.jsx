@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, } from "react";
+import { useNavigate } from "react-router-dom";
 import './MainPage.css';
 import Enppi from '@/assets/Enppi.svg';
 import HA from '@/assets/HA.svg';
@@ -8,7 +9,7 @@ import LangButton from '../utilities/LangButton';
 import './button.css';
 import NavBar from "./NavBar";
 
-import SideBar from "./SideBar";
+import SideBar from "./SideBar/SideBar.jsx";
 
 function MainPage({ children, style, dir, setDir, page, setPage, setIsLoading, isLoading }) {
     const [sideBarStatus, setSideBarStatus] = useState(true);
@@ -17,6 +18,7 @@ function MainPage({ children, style, dir, setDir, page, setPage, setIsLoading, i
     //const [dir, setDir] = useState({ dir: 'ltr', lang: 'en' });
     const sideBar = useRef(null);
 
+    setPage = useNavigate();
 
     return (
         <div className="" style={{
@@ -90,30 +92,7 @@ function MainPage({ children, style, dir, setDir, page, setPage, setIsLoading, i
                     <LangButton setDir={setDir} />
 
 
-                    <button
-                        onClick={() => {
-                            document.title = '(1) كسمك';
-                        }}
-                        style={{
-                            fontSize: "1rem",
-                            fontWeight: "bold",
-                            color: "#fff",
-                            backgroundColor: "blue",
-                            borderRadius: "5px",
-                            padding: "5px",
-                            cursor: "pointer",
-                            border: "none"
-                        }}>
-                        {(function () {
-                            const dict = {
-                                en: "Log out",
-                                ar: "تسجيل الخروج",
-                                he: "התנתק",
-                                de: "Abmelden",
-                            };
-                            return dict[dir.lang] || dict['en'];
-                        })()
-                        }</button>
+
                 </div>
             </div>
             <div className="main-page" style={{

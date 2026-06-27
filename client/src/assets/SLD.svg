@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="213.67796mm"
+   height="213.67796mm"
+   viewBox="0 0 213.67796 213.67796"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   sodipodi:docname="SLD.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     inkscape:zoom="1.3772587"
+     inkscape:cx="399.344"
+     inkscape:cy="186.23952"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <marker
+       style="overflow:visible"
+       id="ConcaveTriangle"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Concave triangle arrow"
+       markerWidth="0.80000001"
+       markerHeight="0.80000001"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="M -2,-4 9,0 -2,4 c 2,-2.33 2,-5.66 0,-8 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path7" />
+    </marker>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(5.5977212,-73.076513)">
+    <g
+       id="g5"
+       transform="matrix(1.0349814,0,0,1.0333271,-3.5415564,-5.9960637)"
+       style="stroke-width:0.966974; fill:currentcolor; stroke: currentcolor;">
+      <path
+         style="fill:none;stroke-width:18.7592965;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         d="M 40.723727,92.980591 H 161.75881"
+         id="path1"
+         sodipodi:nodetypes="cc" />
+      <path
+         style="fill:none; stroke-width:7.73579;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         d="M 101.24127,92.980591 V 145.23415 L 76.432639,183.64016"
+         id="path2"
+         sodipodi:nodetypes="ccc" />
+      <path
+         style="fill:none;stroke-width:7.73579;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;marker-end:url(#ConcaveTriangle)"
+         d="M 101.24127,190.95601 V 230.5304"
+         id="path3"
+         sodipodi:nodetypes="cc" />
+      <path
+         style="fill:none;stroke-width:7.73579;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         d="m 107.60487,184.59241 -12.727202,12.7272"
+         id="path4" />
+      <path
+         style="fill:none;stroke-width:7.73579;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+         d="m 94.877668,184.59241 12.727202,12.7272"
+         id="path5" />
+    </g>
+  </g>
+</svg>

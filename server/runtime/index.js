@@ -15,7 +15,7 @@ const { ip, socketPort, webServerPort } = config.netwotk;
 
 const mysocket = new Server(socketPort, {
     cors: {
-        origin: ["http://localhost:5173", `http://${ip}`],
+        origin: ["http://localhost:5173", `http://${ip}:${webServerPort}`],
         credentials: true
     }
 });
@@ -106,7 +106,7 @@ mysocket.on("connection", (socket) => {
     });
 });
 
-
+// example
 setInterval(() => {
     Object.keys(ModBusDevices).forEach(key => {
         Object.keys(ModBusDevices[key].devices).forEach(device => {
@@ -126,7 +126,7 @@ setInterval(() => {
                 let startFrom = socketObject.startFrom;
                 let length = socketObject.length;
                 let data = buff.slice(startFrom, startFrom + length);
-                console.log({ id: socketObject.id, startFrom: startFrom, length: length, deviceID: [key, device] })
+                //console.log({ id: socketObject.id, startFrom: startFrom, length: length, deviceID: [key, device] })
                 /*console.log({
                     deviceID: [key, device],
                     buff: data,

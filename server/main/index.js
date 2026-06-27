@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url';
 import { Router } from "express";
 import favicon from "serve-favicon";
 import { join } from "path";
+import { fork } from "child_process";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,25 +24,46 @@ app.use(cors({
     credentials: true
 }))
 
-app.get("/favicon.svg", (req, res) => {
+
+
+
+router.get("/favicon.svg", (req, res) => {
     res.sendFile(path.join(__dirname, "../../client/dist/favicon.svg"));
 });
 
-app.get("/unjustking.svg", (req, res) => {
+router.get("/unjustking.svg", (req, res) => {
     res.sendFile(path.join(__dirname, "../../client/dist/unjustking.svg"));
 });
 
-app.use(express.static(path.join(__dirname, "../../client/dist")));
 
+
+//app.use(express.static(path.join(__dirname, "../../client/dist")));
+router.get("/", (req, res, next) => {
+    res.redirect("/control-panel")
+    next()
+});
+// /assets/*
+app.get(/assets\/.*/, (req, res) => {
+    res.sendFile(path.join(__dirname, "../../client/dist" + req.url));
+})
 //app.use(express.static(path.join(__dirname, "../../client/dist/favicon.svg")));
 
-router.route("/").get((req, res) => {
+router.get(/(.*)/, (req, res) => {
     res.sendFile(path.join(__dirname, "../../client/dist/index.html"));
-});
+})
+
 
 
 
 app.use("/main", router);
+
+app.get("/gloriousFiles/network.svg", (req, res) => {
+    let svgContnet = fs.readFileSync(path.join(__dirname, "../../client/src/assets/network.svg"));
+    //console.log(svgContnet)
+    res.writeHead(200, { "Content-Type": "image/svg+xml" });
+    res.end(svgContnet);
+    //res.send("dsdsds")
+});
 
 app.get("/blab", (req, res) => {
     setTimeout(() => {
@@ -48,14 +71,27 @@ app.get("/blab", (req, res) => {
     }, 10000);
 });
 
-app.get("/", (req, res) => {
-    console.log(req.headers.get('sec-fetch-site'));
-});
+app.get("/login", (req, res) => {
+    setTimeout(() => {
+        res.end("kosomak");
+    }, 10000);
+})
+
+app.get(/(.*)/, (req, res) => {
+    console.log("kosomak")
+    res.redirect(302, "/main/control-panel")
+})
+
+
 
 app.listen(webServerPort, ip, () => {
     console.log("Server started on port", webServerPort);
 });
 
-process.on('message', (data) => {
-    console.log('--->')
-})
+
+// run modbus process
+const runtimeProcess = fork(join(__dirname, "../runtime/index.js"));
+
+runtimeProcess.on("message", (data) => {
+    //cnsole.log(data);
+});

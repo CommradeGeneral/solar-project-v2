@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="169.82407mm"
+   height="169.82407mm"
+   viewBox="0 0 169.82407 169.82407"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   sodipodi:docname="default-profile.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.34431467"
+     inkscape:cx="175.71136"
+     inkscape:cy="85.67744"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(11.910744,1.5368729)">
+    <circle
+       style="fill:#e9afaf;stroke:none;stroke-width:19.4;stroke-linecap:round;stroke-linejoin:round"
+       id="path1"
+       cx="73.001289"
+       cy="83.37516"
+       r="84.912033" />
+    <path
+       id="path3"
+       style="stroke-width:19.4;stroke-linecap:round;stroke-linejoin:round;fill:#aa0000"
+       d="M 73.001386 20.966146 A 21.859261 21.859261 0 0 0 51.142255 42.825277 A 21.859261 21.859261 0 0 0 73.001386 64.684408 A 21.859261 21.859261 0 0 0 94.860517 42.825277 A 21.859261 21.859261 0 0 0 73.001386 20.966146 z M 49.179584 71.0804 C 33.215354 71.0804 20.363772 83.932499 20.363772 99.896729 L 20.363772 150.00323 A 84.912033 84.912033 0 0 0 73.001386 168.28739 A 84.912033 84.912033 0 0 0 125.639 150.00323 L 125.639 99.896729 C 125.639 83.932499 112.7869 71.0804 96.822671 71.0804 L 49.179584 71.0804 z " />
+  </g>
+</svg>
