@@ -12,12 +12,14 @@ import NavBar from "./NavBar";
 import SideBar from "./SideBar/SideBar.jsx";
 
 function MainPage({ children, style, dir, setDir, page, setPage, setIsLoading, isLoading }) {
-    const [sideBarStatus, setSideBarStatus] = useState(true);
+    let sidebar = (window.localStorage.getItem('sideBarStatus') == 'true')
+    console.log(sidebar)
+    const [sideBarStatus, setSideBarStatus] = useState(sidebar);
     const [changeWidth, setChangeWidth] = useState(false);
     const [sideBarWidth, setSideBarWidth] = useState(230);
     //const [dir, setDir] = useState({ dir: 'ltr', lang: 'en' });
     const sideBar = useRef(null);
-
+    console.log('sidebar:', sideBarStatus)
     setPage = useNavigate();
 
     return (
@@ -156,7 +158,9 @@ function MainPage({ children, style, dir, setDir, page, setPage, setIsLoading, i
                                 left: dir == "ltr" ? "0px" : "initial",
                                 position: "absolute",
                             }} onClick={() => {
-                                setSideBarStatus(!sideBarStatus);
+                                let newStatus = !sideBarStatus;
+                                setSideBarStatus(newStatus);
+                                window.localStorage.setItem('sideBarStatus', newStatus);
                             }}> = </button>
 
                             {children}
