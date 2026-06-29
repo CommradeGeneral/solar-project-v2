@@ -8,6 +8,7 @@ import Login from './components/pages/login/login'
 import MainPage from './components/pageFrame/MainPage'
 import Overview from './components/pages/overview/Overview'
 import Network from './components/pages/network/Network'
+import PowerMeter from './components/pages/power-meter/PowerMeter'
 import { io } from 'socket.io-client';
 import { ip, socketPort, webServerPort } from './config.js';
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
@@ -104,6 +105,7 @@ function App() {
     "main/single-line-diagram": <h1>2</h1>,
     "main/3": <h1>3</h1>,
     "main/devices-list/inverter": <h1>4</h1>,
+    "main/devices-list/energy-meter": <PowerMeter />,
     "main/5": <h1>5</h1>,
   }
   return (

@@ -81,7 +81,7 @@ const list = [
             let pageSect = page.split('/')[0]
             let subpage = page.split('/')[1]
             const deviceList = [
-                { text: { en: 'Energy Meter', ar: 'عداد الكهرباء' }, pageName: "en-meter", icon: <ElectricMeterOutlined /> },
+                { text: { en: 'Energy Meter', ar: 'عداد الكهرباء' }, pageName: "energy-meter", icon: <ElectricMeterOutlined /> },
                 { text: { en: 'Inverter', ar: 'الإنفرتر' }, pageName: "inverter", icon: <Inverter style={{ width: '1em', height: '1em', aspectRatio: '1', fontSize: '1.5rem' }} /> },
                 { text: { en: 'Protection Relay', ar: 'ريلاي الوقاية' }, pageName: "protection-relay", icon: <ProtectionRelay style={{ width: '1em', height: '1em', aspectRatio: '1', fontSize: '1.5rem' }} /> },
                 { text: { en: 'Weather Station', ar: 'محطة الأرصاد' }, pageName: "weather-station", icon: <WeatherStation style={{ width: '1em', height: '1em', aspectRatio: '1', fontSize: '1.5rem', fill: 'currentcolor' }} /> },
