@@ -15,7 +15,7 @@ const { ip, socketPort, webServerPort } = config.netwotk;
 
 const mysocket = new Server(socketPort, {
     cors: {
-        origin: ["http://localhost:5173", `http://${ip}:${webServerPort}`],
+        origin: ["http://localhost:5173", `http://${ip}${webServerPort != 80 ? ':' + webServerPort : ''}`],
         credentials: true
     }
 });
