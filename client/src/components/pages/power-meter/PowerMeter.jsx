@@ -1,7 +1,7 @@
 
 import { useEffect, useRef } from 'react'
 import './BoxStyle.css'
-function PowerMeter() {
+function PowerMeter({ language }) {
 
     const contRef = useRef(null);
     const isMouseOverRef = useRef(null);
@@ -58,7 +58,8 @@ function PowerMeter() {
                     boxSizing: 'border-box',
                     zIndex: 1,
                     top: 0,
-                    right: 0,
+                    right: language.dir === 'ltr' ? 0 : 'auto',
+                    left: language.dir === 'rtl' ? 0 : 'auto',
                     backgroundColor: 'rgba(65, 64, 64, 1)',
                     opacity: 0,
                     transition: 'opacity 0.3s ease-in-out',

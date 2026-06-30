@@ -105,7 +105,7 @@ function App() {
     "main/single-line-diagram": <h1>2</h1>,
     "main/3": <h1>3</h1>,
     "main/devices-list/inverter": <h1>4</h1>,
-    "main/devices-list/energy-meter": <PowerMeter />,
+    "main/devices-list/energy-meter": <PowerMeter language={dir} />,
     "main/5": <h1>5</h1>,
   }
   return (
