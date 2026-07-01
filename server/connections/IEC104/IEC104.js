@@ -17,20 +17,24 @@ class IEC104 extends EventEmitter {
         this.socket = new net.Socket();
         this.N_S = 0;
         this.N_R = 0;
-        this.w = 8;
-        this.k = 12;
+        this.w = 50;
+        this.k = 8;
         this.t1 = { timer: null, val: 15 };
         this.t2 = { timer: null, val: 10 };
         this.t3 = { timer: null, val: 23 };
         this.unackedPackets = 0;
-
+        this.unackedPacketsSent = 0;
+        this.connectionState = 0; // 0=> disconnected, 1=> connecting, 2=> connected, 3=> error
+        this._isSending = 0;
         this.socket.on('connect', () => {
             console.log('connect')
+            this.connectionState = 2;
+            this.sendData(Buffer.from([0x68, 0x04, IEC104_CMDs.STARTDT, 0x00, 0x00, 0x00]));
+
             // 
         });
 
         this.socket.on('data', (data) => {
-            console.log('data', data)//
             /**
              * parse IEC104 packet from server
              * if data[0] != 0x68, it is not a valid IEC104 packet
@@ -56,6 +60,7 @@ class IEC104 extends EventEmitter {
             this.t3.timer = setTimeout(() => {
                 console.log("------")
                 this.sendData(Buffer.from([0x68, 0x04, IEC104_CMDs.TESTFR, 0x00, 0x00, 0x00]));
+
                 clearTimeout(this.t3.timer);
             }, this.t3.val * 1000);
             switch (packetFormat) {
@@ -78,38 +83,95 @@ class IEC104 extends EventEmitter {
 
         this.socket.on('error', (err) => {
             console.log('error', err)
+            this.connectionState = 3
         });
+
+        this.socket.setTimeout(30000)
+        this.socket.on('timeout', () => {
+            console.log('timeout')
+        })
 
         this.socket.on('close', () => {
             console.log('close')
+            console.log(`last N(S) = ${this.N_S}, last N(R) = ${this.N_R}`);
+            clearTimeout(this.t3.timer)
+            clearTimeout(this.t2.timer)
+            clearTimeout(this.t1.timer)
+            this.unackedPackets = 0;
+            this.t1.timer = null
+            this.t2.timer = null
+            this.t3.timer = null
+            this.N_R = 0;
+            this.N_S = 0;
+            if (this.connectionState != 3) this.connectionState = 0;
+            if (this.connectionState == 1) return;
+            let interval = setTimeout(() => {
+                clearTimeout(interval);
+                this.start();
+            }, 3000)
         });
 
     }
 
-    start() {
-        this.socket.connect(this.networkConfig.port, this.networkConfig.host);
+    start(cbk = () => { }) {
+        if (this.connectionState === 2) return;
+        if (this.connectionState === 1) return;
+        this.connectionState = 1;
+        this.socket.connect(this.networkConfig.port, this.networkConfig.host, () => {
+            this.connectionState = 2
+
+        });
+
     }
 
     stop() {
         this.socket.end();
     }
 
-    sendData(buffer) {
-        this.socket.write(buffer);
+    sendData(buffer, callback = (e) => { }) {
+        this.socket.write(buffer, (e) => {
+            callback();
+        });
+    }
+
+    sendIFrame(buffer) {
+        if (this.unackedPacketsSent >= this.k) return;
+        let len = buffer.length + 4
+        let dat0 = ((this.N_S & 0x7F) * 2)
+        let dat1 = (((this.N_S >> 7) & 0xFF));
+        let dat2 = (this.N_R & 0x7F) * 2;
+        let dat3 = ((this.N_R >> 7) & 0xFF)
+        let header = Buffer.from([
+            0x68, len,
+            dat0, dat1,
+            dat2, dat3
+        ])
+        console.log("sending")
+        if (this._isSending) return;
+        this._isSending = 1;
+        clearTimeout(this.t2.timer)
+        console.log("From I frame: ", header)
+        this.sendData(Buffer.concat([header, buffer]), (e) => {
+            console.log(e)
+            this.unackedPacketsSent++;
+            this.N_S++;
+            this._isSending = 0;
+        })
     }
 
     parseIFormat(data) {
-        console.log("formatted", data);
-        this.N_R = data[0] / 2 + data[1] * 128;
-        this.N_S = data[2] / 2 + data[3] * 128;
+        this.N_R = (data[0] >> 1) + data[1] * 128;
+        this.N_S = (data[2] >> 1) + data[3] * 128;
         this.N_R++;
-        console.log(this.N_R);
+        console.log("N(R) = ", this.N_R);
         let ASDU_format = data.subarray(4);
 
         this.unackedPackets++;
+        //console.log("ASDU format: ", ASDU_format)
 
         this.emit('I-format', ASDU_format);
         if (this.unackedPackets >= this.w) {
+            console.log("W is over")
             this.sendSFormat();
 
         } else {
@@ -125,15 +187,17 @@ class IEC104 extends EventEmitter {
 
     parseSFormat(data) {
         this.N_S = data[2] / 2 + data[3] * 128;
-        this.sendSFormat();
+        this.unackedPacketsSent = 0;
+        //this.sendSFormat();
     }
 
     sendSFormat() {
         clearTimeout(this.t2.timer)
         this.t2.timer = null;
         this.unackedPackets = 0;
-        let dat0 = (this.N_R & 0xff) << 1;
-        let dat1 = ((this.N_R >> 8) & 0xFF) << 1;
+        let dat0 = (this.N_R & 0x7f) << 1;
+        let dat1 = ((this.N_R >> 7) & 0xFF);
+        console.log("from S-format ", [0x68, 0x04, 0x01, 0x00, dat0, dat1])
         this.sendData(
             Buffer.from(
                 [0x68, 0x04, 0x01, 0x00, dat0, dat1]
