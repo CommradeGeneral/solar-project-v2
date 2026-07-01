@@ -15,6 +15,7 @@ class IEC104 extends EventEmitter {
         super();
         this.networkConfig = networkConfig;
         this.socket = new net.Socket();
+        this.socket.setMaxListeners(10);
         this.N_S = 0;
         this.N_R = 0;
         this.w = 8;
@@ -22,6 +23,7 @@ class IEC104 extends EventEmitter {
         this.t1 = { timer: null, val: 15 };
         this.t2 = { timer: null, val: 10 };
         this.t3 = { timer: null, val: 23 };
+        this.reconnectionTime = 1000;
         this.unackedPackets = 0;
         this.unackedPacketsSent = 0;
         this.connectionState = 0; // 0=> disconnected, 1=> connecting, 2=> connected, 3=> error
@@ -45,7 +47,7 @@ class IEC104 extends EventEmitter {
              */
             let APDU_len = data[1];
             if (APDU_len < 4) return;
-
+            if (APDU_len != data.length - 2) return;
             let control_fields = data.subarray(2, 4)
             /**
              * packets are sorted according to control_fields[0]
@@ -82,7 +84,7 @@ class IEC104 extends EventEmitter {
         });
 
         this.socket.on('error', (err) => {
-            console.log('error', err)
+            console.log('error')
             this.connectionState = 3
         });
 
@@ -92,8 +94,6 @@ class IEC104 extends EventEmitter {
         })
 
         this.socket.on('close', () => {
-            console.log('close')
-            console.log(`last N(S) = ${this.N_S}, last N(R) = ${this.N_R}`);
             clearTimeout(this.t3.timer)
             clearTimeout(this.t2.timer)
             clearTimeout(this.t1.timer)
@@ -101,6 +101,7 @@ class IEC104 extends EventEmitter {
             this.t1.timer = null
             this.t2.timer = null
             this.t3.timer = null
+            console.log(`Last N(R) = ${this.N_R}, Last N(S) = ${this.N_S}, `)
             this.N_R = 0;
             this.N_S = 0;
             if (this.connectionState != 3) this.connectionState = 0;
@@ -108,7 +109,7 @@ class IEC104 extends EventEmitter {
             let interval = setTimeout(() => {
                 clearTimeout(interval);
                 this.start();
-            }, 3000)
+            }, this.reconnectionTime)
         });
 
     }
@@ -117,24 +118,21 @@ class IEC104 extends EventEmitter {
         if (this.connectionState === 2) return;
         if (this.connectionState === 1) return;
         this.connectionState = 1;
-        this.socket.connect(this.networkConfig.port, this.networkConfig.host, () => {
-            this.connectionState = 2
-
-        });
-
+        this.socket.connect(this.networkConfig.port, this.networkConfig.host);
     }
 
     stop() {
         this.socket.end();
     }
 
-    sendData(buffer, callback = (e) => { }) {
+    sendData(buffer, callback = () => { }) {
         this.socket.write(buffer, (e) => {
-            callback();
+            callback()
         });
     }
 
     sendIFrame(buffer) {
+        if (this.connectionState != 2) return;
         if (this.unackedPacketsSent >= this.k) return;
         let len = buffer.length + 4
         let dat0 = ((this.N_S & 0x7F) * 2)
@@ -147,12 +145,13 @@ class IEC104 extends EventEmitter {
             dat2, dat3
         ])
         //console.log("sending")
-        if (this._isSending) return;
+        console.log("From I frame: ", this._isSending)
+        if (this._isSending == 1) return;
         this._isSending = 1;
         clearTimeout(this.t2.timer)
-        //console.log("From I frame: ", header)
+
         this.sendData(Buffer.concat([header, buffer]), (e) => {
-            console.log(e)
+            console.log('I am as cool a')
             this.unackedPacketsSent++;
             this.N_S++;
             this._isSending = 0;
@@ -177,7 +176,6 @@ class IEC104 extends EventEmitter {
         } else {
             if (!this.t2.timer) {
                 this.t2.timer = setTimeout(() => {
-
                     this.sendSFormat();
                 }, this.t2.val * 1000)
             }
