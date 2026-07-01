@@ -17,8 +17,8 @@ class IEC104 extends EventEmitter {
         this.socket = new net.Socket();
         this.N_S = 0;
         this.N_R = 0;
-        this.w = 50;
-        this.k = 8;
+        this.w = 8;
+        this.k = 12;
         this.t1 = { timer: null, val: 15 };
         this.t2 = { timer: null, val: 10 };
         this.t3 = { timer: null, val: 23 };
@@ -146,11 +146,11 @@ class IEC104 extends EventEmitter {
             dat0, dat1,
             dat2, dat3
         ])
-        console.log("sending")
+        //console.log("sending")
         if (this._isSending) return;
         this._isSending = 1;
         clearTimeout(this.t2.timer)
-        console.log("From I frame: ", header)
+        //console.log("From I frame: ", header)
         this.sendData(Buffer.concat([header, buffer]), (e) => {
             console.log(e)
             this.unackedPacketsSent++;
@@ -197,7 +197,6 @@ class IEC104 extends EventEmitter {
         this.unackedPackets = 0;
         let dat0 = (this.N_R & 0x7f) << 1;
         let dat1 = ((this.N_R >> 7) & 0xFF);
-        console.log("from S-format ", [0x68, 0x04, 0x01, 0x00, dat0, dat1])
         this.sendData(
             Buffer.from(
                 [0x68, 0x04, 0x01, 0x00, dat0, dat1]
