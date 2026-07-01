@@ -1,14 +1,27 @@
 import SLD from '../../../assets/single-line-diagram.svg?react';
 import { useRef, useState, useEffect } from 'react';
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+
+import './SingleLineDiagram.css'
+
 function SingleLineDiagram() {
     const containerRef = useRef(null);
     const [timeoutId, setTimeoutId] = useState(null);
     useEffect(() => {
+        const svg = containerRef.current.querySelectorAll('.cell')[0];
+        for (let i = 1; i <= 3; i++) {
+            const kosomak = containerRef.current.querySelector('.L' + i)
+            kosomak.addEventListener('click', () => {
+                console.log('click')
+            })
+        }
         const timeoutId = setInterval(() => {
-            const svg = containerRef.current.querySelector('.cell');
+
             let rand1 = Math.random() > 0.5 ? true : false;
             let rand2 = Math.random() > 0.5 ? true : false;
+
             if (svg) {
+                containerRef.current.querySelector('.volt-value').textContent = ((Math.random() * 200) + 6500).toString().slice(0, 6)
                 const line11 = svg.querySelector('.line-1-1');
                 const line12 = svg.querySelector('.line-1-2');
                 const line13 = svg.querySelector('.line-1-3');
@@ -47,13 +60,39 @@ function SingleLineDiagram() {
                     contact2.setAttribute('transform', `rotate(0,84.42218,96.211464)`)
                 }
             }
-        }, 2000);
+        }, 500);
         return () => clearInterval(timeoutId);
     }, []);
     return (
-        <div ref={containerRef} className="container">
-            <SLD />
-        </div>
+        <TransformWrapper
+            initialScale={1}
+            minScale={1}
+            maxScale={100}
+            step={0.005}
+            limitToBounds={true}
+
+        >
+            <TransformComponent contentStyle={{
+                placeContent: 'center',
+                height: '100%',
+                width: 'fit-content',
+                margin: '0 auto',
+                padding: '10px',
+                boxSizing: 'border-box'
+            }} wrapperStyle={{
+                height: '100%',
+                width: 'fit-content',
+                margin: '0 auto',
+                placeContent: 'center',
+                alignContent: 'center',
+                justifyContent: 'center',
+                boxSizing: 'border-box',
+            }}>
+                <div ref={containerRef} className="container" style={{ height: '100%' }}>
+                    <SLD ref={containerRef} style={{ width: '100%', height: '100%' }} />
+                </div>
+            </TransformComponent>
+        </TransformWrapper>
     );
 }
 
