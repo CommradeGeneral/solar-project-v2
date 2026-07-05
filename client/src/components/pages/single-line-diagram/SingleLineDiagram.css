@@ -2,8 +2,26 @@
 .L2,
 .L3 {
     cursor: pointer;
+
+    &.active {
+        fill: red !important
+    }
 }
 
-.cell-container {
-    opacity: 0.15;
+.cell-energy-meter-conn,
+.cell-protection-relay-conn,
+.cell-measurements-conn {
+    &:not(.connected) {
+        opacity: 1;
+    }
+
+    &.connected {
+        opacity: 0;
+    }
+
+    transition: opacity 0.8s ease;
+}
+
+.cell {
+    transition: opacity 0.8s ease;
 }

@@ -8,8 +8,9 @@ import Watch from '../utilities/Watch';
 import LangButton from '../utilities/LangButton';
 import './button.css';
 import NavBar from "./NavBar";
-
+import BottomBar from "./BottomBar/BottomBar.jsx";
 import SideBar from "./SideBar/SideBar.jsx";
+import arrow from '@/assets/arrow.svg';
 
 function MainPage({ children, style, dir, setDir, page, setPage, setIsLoading, isLoading }) {
     let sidebar = (window.localStorage.getItem('sideBarStatus') == 'true')
@@ -73,7 +74,7 @@ function MainPage({ children, style, dir, setDir, page, setPage, setIsLoading, i
                     {(function () {
                         const dict = {
                             en: "⚡ 10MW ASORC PV",
-                            ar: "محطة ASORC للطاقة الشمسية بقدرة 10 ميجاواط⚡",
+                            ar: "محطة أسيوط ASORC للطاقة الشمسية بقدرة 10 ميجاواط⚡",
                             de: "⚡ 10MW ASORC PV",
                         };
                         return dict[dir.lang] || dict['en'];
@@ -124,10 +125,56 @@ function MainPage({ children, style, dir, setDir, page, setPage, setIsLoading, i
                         top: '0px',
                         right: dir.dir == "ltr" ? "0px" : "initial",
                         left: dir.dir == "rtl" ? "0px" : "initial",
-                        backgroundColor: 'rgba(0, 7, 143, 0.5)',
                         position: "absolute",
+                        backgroundColor: 'rgba(0, 7, 143, 0.5)',
+
                     }}>
+
                         <SideBar lang={dir} page={page} setPage={setPage} setIsLoading={setIsLoading} isLoading={isLoading} />
+                        <div style={{
+                            width: '20px',
+                            height: '60px',
+                            background: 'rgba(2, 11, 192, 0.68)',
+                            position: 'absolute',
+                            borderRadius: dir.dir == 'ltr' ? '0 10px 10px 0' : '10px 0 0 10px',
+                            top: '50%',
+                            left: dir.dir == 'ltr' ? '100%' : 'initial',
+                            right: dir.dir == 'rtl' ? '100%' : 'initial',
+                            zIndex: '999',
+                            transform: 'translate(-0%, -50%)',
+                            placeContent: 'center',
+                            textAlign: 'center',
+                            verticalAlign: 'center',
+                            cursor: 'pointer',
+                            fontSize: '1.5rem',
+                            fontWeight: 'bold',
+                            color: 'white',
+                            placeContent: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+
+                        }} onClick={() => {
+                            setSideBarStatus(!sideBarStatus);
+                            window.localStorage.setItem('sideBarStatus', !sideBarStatus);
+                        }}>
+                            <div style={{
+                                transform: sideBarStatus ? 'rotate(0deg)' : 'rotate(180deg)',
+                                transition: 'transform 0.5s',
+                                position: 'absolute',
+                                pointerEvents: 'none',
+                                //left: dir.dir == 'rtl' ? '50%' : 'initial',
+                                //right: dir.dir == 'ltr' ? '50%' : 'initial',
+                                //top: '50%',
+                            }}>
+                                <img src={arrow} alt="arrow" style={{
+                                    display: 'block',
+                                    width: '0.6rem',
+                                    pointerEvents: 'none',
+                                    transform: dir.dir == 'rtl' ? 'rotate(180deg)' : 'rotate(0deg)',
+                                }} />
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -138,30 +185,28 @@ function MainPage({ children, style, dir, setDir, page, setPage, setIsLoading, i
                     boxSizing: 'border-box',
                     display: 'flex',
                     flexDirection: 'column',
+                    position: 'relative',
                 }}>
+
+
 
 
                     <div className="" style={{
                         width: "100%",
                         height: "100%",
                         padding: '10px',
-                        boxSizing: 'border-box'
-
+                        boxSizing: 'border-box',
+                        position: 'relative',
+                        overflowY: 'hidden'
                     }}>
+                        <BottomBar lang={dir} />
+
                         <div style={{
                             width: "100%",
                             height: "100%",
                             position: "relative",
                         }}>
-                            <button className="side-bar-toggle-button" style={{
-                                right: dir == "rtl" ? "0px" : "initial",
-                                left: dir == "ltr" ? "0px" : "initial",
-                                position: "absolute",
-                            }} onClick={() => {
-                                let newStatus = !sideBarStatus;
-                                setSideBarStatus(newStatus);
-                                window.localStorage.setItem('sideBarStatus', newStatus);
-                            }}> = </button>
+
 
                             {children}
                         </div>

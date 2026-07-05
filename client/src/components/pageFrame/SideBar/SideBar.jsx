@@ -37,6 +37,8 @@ function SideBar({ lang, page = 0, setPage = (index) => console.log(index) }) {
                 flexDirection: 'column',
                 fontSize: '0.9rem',
                 fontWeight: 'bold',
+                maxHeight: '75%',
+                overflowY: 'auto',
             }}>
 
                 {list.map((item, index) => (

@@ -1,138 +1,195 @@
-
-import { useEffect, useRef } from 'react'
-import './BoxStyle.css'
+import PageNavBar from './PageNavBar';
+import {
+    OverlayScrollbarsComponent
+} from 'overlayscrollbars-react';
+import "overlayscrollbars/overlayscrollbars.css";
 function PowerMeter({ language }) {
-
-    const contRef = useRef(null);
-    const isMouseOverRef = useRef(null);
-    const Timeout = useRef(null);
-
-    const randomColor = () => {
-        const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange', 'pink', 'brown', 'gray', 'black'];
-        return colors[Math.floor(Math.random() * colors.length)];
-    }
-
-    useEffect(() => {
-
-    }, [])
     return (
         <div style={{
-            width: '100%',
             height: '100%',
-            overflow: 'hidden',
-            flexDirection: 'column',
-            display: 'flex',
+            display: 'grid',
+            gridTemplateRows: 'auto 1fr',
+            boxSizing: 'border-box',
             gap: '10px',
         }}>
             <div style={{
-                backgroundColor: 'pink',
                 width: '100%',
-                height: '70px',
-                flexShrink: 0
-            }}></div>
-            <div
-                onMouseEnter={(e) => {
-                    console.log('onMouseEnter');
-                    //  g   et the slider element and set its height based on the scroll position
+                height: 'fit-content',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '5px 0px',
+                borderTop: '3px solid rgba(255,255,255,0.2)',
+                borderBottom: '3px solid rgba(255,255,255,0.2)',
+            }}>
 
+                <h2 style={{
+                    color: 'white',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    margin: 0,
+                }}>{
+                        (() => {
+                            let list = { en: 'Energy Meter', ar: 'عداد الكهرباء' }
+                            return list[language.lang] || list.en
+                        })()
+                    }
+                </h2>
+                <div>
+                    {/* Navigation buttons for switching between different energy meter data: 1 to 14 */}
+                    {/*// show only 5 buttons and they can be slided by < and  > buttons*/}
 
-                }}
-
-                onMouseLeave={(e) => {
-                    console.log('onMouseLeave');
-                    isMouseOverRef.current.style.opacity = 0;
-                }}
-
-                style={{
-                    flexDirection: 'column',
-                    height: '100%',
-                    overflow: 'hidden',
-                    position: 'relative',
-                    backgroundColor: 'rgba(233, 205, 188, 0.1)',
-                }}>
-                <div ref={isMouseOverRef} style={{
-                    position: 'absolute',
-                    width: '15px',
-                    height: '100%',
-                    padding: '2px',
-                    boxSizing: 'border-box',
-                    zIndex: 1,
-                    top: 0,
-                    right: language.dir === 'ltr' ? 0 : 'auto',
-                    left: language.dir === 'rtl' ? 0 : 'auto',
-                    backgroundColor: 'rgba(65, 64, 64, 1)',
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease-in-out',
-                }}>
-                    <div style={{
-                        height: '100%',
-                        width: '100%',
-                        position: 'relative',
-                        boxSizing: 'content-box',
-                    }}>
-                        <div className="slider" style={{ width: '100%', backgroundColor: 'rgba(99, 99, 99, 1)', position: 'absolute', borderRadius: '5.5px' }}></div>
-                    </div>
-
-                </div>
-
-                <div ref={contRef} onScroll={(e) => {
-                    //  get the slider element and set its height based on the scroll position
-                    const slider = isMouseOverRef.current.querySelector('.slider');
-                    // using get client
-                    // get clientHeight, scrollHeight, scrollTop of the scroll container
-                    // getClientRect
-                    isMouseOverRef.current.style.opacity = 1;
-                    clearTimeout(Timeout.current);
-                    Timeout.current = setTimeout(() => {
-                        isMouseOverRef.current.style.opacity = 0;
-                    }, 1000);
-
-                    slider.style.height = `${contRef.current.offsetHeight * (contRef.current.offsetHeight / contRef.current.scrollHeight) - 4}px`;
-                    slider.style.top = `${contRef.current.scrollTop * (contRef.current.offsetHeight / contRef.current.scrollHeight)}px`;
-                    console.log('contRef.current.scrollTop', contRef.current.scrollTop);
-                    console.log('contRef.current.offsetHeight', contRef.current.offsetHeight);
-                    console.log('contRef.current.scrollHeight', contRef.current.scrollHeight);
-                }}
-
-
-
-                    style={{
-                        overflowY: 'auto',
-                        scrollbarWidth: 'none',
-                        boxSizing: 'border-box',
-                        padding: '10px',
-                        position: 'relative',
-                        height: '100%',
-                        // center the content
-                        // background: 'linear-gradient(white 30%, rgba(255, 255, 255, 0)), linear-gradient(rgba(255, 255, 255, 0), white 70%) 0 100%',
-                        // background: 'linear-gradient(white 30%, rgba(255, 255, 255, 0)), linear-gradient(rgba(255, 255, 255, 0), white 70%) 0 100%, radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, .2), rgba(0, 0, 0, 0)), radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, .2), rgba(0, 0, 0, 0)) 0 100%',
-                    }}>
-
-                    {/* top fade */}
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, 250px)',
-                        gridGap: '10px',
-                        justifyContent: 'center',
-                    }}  >
-                        {
-                            Array.from({ length: 50 }).map((_, i) => {
-                                return (
-                                    <div className='card' key={i} style={{
-
-                                    }}>
-                                        test {i}
-                                    </div>
-                                )
-                            })
-                        }
-                    </div>
-
-
+                    <PageNavBar language={language} />
                 </div>
             </div>
+
+            <div style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                overflow: 'auto'
+            }}>
+                <OverlayScrollbarsComponent className="options-list" options={{
+                    overflow: {
+                        x: "hidden",
+                        y: "scroll"
+                    },
+                    scrollbars: {
+                        autoHide: "scroll",
+                        autoHideDelay: 300,
+                        theme: "os-theme-light",
+                        dragScroll: true,
+                        clickScroll: true
+                    }
+                }} style={{
+                    width: '100%',
+                    height: '100%',
+                    boxSizing: 'border-box',
+
+                }}>
+                    <div style={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(250px,1fr))',
+                        gap: '10px',
+                        boxSizing: 'border-box',
+
+                    }}>
+
+                        {Array.from({ length: 24 }).map((_, i) => {
+                            return (
+
+                                <div className="box box-1" style={{
+                                    backgroundColor: '#191477ff',
+                                    color: 'white',
+                                    borderRadius: '5px',
+                                    boxSizing: 'border-box',
+                                    padding: '20px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '5px',
+                                }}>
+                                    <div style={{
+                                        width: '100%',
+                                        textAlign: 'center',
+                                        fontSize: '1.3rem',
+                                        fontWeight: 'bold',
+                                    }}>
+                                        Phase A active power
+                                    </div>
+                                    <div style={{
+                                        width: '100%',
+                                        textAlign: 'center',
+                                        fontSize: '1.4rem',
+                                        color: 'rgba(0, 98, 255, 1)',
+                                        fontWeight: 'bold',
+                                    }}>
+                                        1.123456789  <span style={{
+                                            color: 'rgba(255,255,255,0.5)',
+
+                                        }}>kW</span>
+                                    </div>
+                                </div>
+                            )
+                        })}
+
+                    </div>
+                </OverlayScrollbarsComponent>
+            </div >
         </div >
+
+
     );
 }
 
 export default PowerMeter;
+
+/*
+<OverlayScrollbarsComponent className="options-list" options={{
+                    overflow: {
+                        x: "hidden",
+                        y: "scroll"
+                    },
+                    scrollbars: {
+                        autoHide: "move",
+                        autoHideDelay: 300,
+                        theme: "os-theme-light",
+                        dragScroll: true,
+                        clickScroll: true
+                    }
+                }} style={{
+                    width: '100%',
+                    height: '100%',
+                    boxSizing: 'border-box',
+
+                }}>
+                    <div style={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(250px,1fr))',
+                        gap: '10px',
+                        boxSizing: 'border-box',
+
+                    }}>
+
+                        {Array.from({ length: 25 }).map((_, i) => {
+                            return (
+
+                                <div className="box box-1" style={{
+                                    backgroundColor: '#191477ff',
+                                    color: 'white',
+                                    borderRadius: '5px',
+                                    boxSizing: 'border-box',
+                                    padding: '20px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '5px',
+                                }}>
+                                    <div style={{
+                                        width: '100%',
+                                        textAlign: 'center',
+                                        fontSize: '1.3rem',
+                                        fontWeight: 'bold',
+                                    }}>
+                                        Phase A active power
+                                    </div>
+                                    <div style={{
+                                        width: '100%',
+                                        textAlign: 'center',
+                                        fontSize: '1.4rem',
+                                        color: 'rgba(0, 98, 255, 1)',
+                                        fontWeight: 'bold',
+                                    }}>
+                                        1.123456789  <span style={{
+                                            color: 'rgba(255,255,255,0.5)',
+
+                                        }}>kW</span>
+                                    </div>
+                                </div>
+                            )
+                        })}
+
+                    </div>
+                </OverlayScrollbarsComponent>
+*/

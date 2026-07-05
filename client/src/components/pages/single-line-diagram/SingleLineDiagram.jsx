@@ -1,26 +1,154 @@
 import SLD from '../../../assets/single-line-diagram.svg?react';
 import { useRef, useState, useEffect } from 'react';
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-
+import SLD_Cell from './SingleLineDiagramFcn'
 import './SingleLineDiagram.css'
 
 function SingleLineDiagram() {
     const containerRef = useRef(null);
     const [timeoutId, setTimeoutId] = useState(null);
+    const phaseRef = useRef(1);
+    const dummyVals = useRef({
+        pr_01: {
+            begin: 128,
+            buffer: new ArrayBuffer(100)
+        },
+        pr_02: {
+            begin: 128,
+            buffer: new ArrayBuffer(100)
+        },
+        pr_06: {
+            begin: 128,
+            buffer: new ArrayBuffer(100)
+        },
+        pr_09: {
+            begin: 128,
+            buffer: new ArrayBuffer(100)
+        },
+        pr_13: {
+            begin: 128,
+            buffer: new ArrayBuffer(100)
+        },
+        pr_14: {
+            begin: 128,
+            buffer: new ArrayBuffer(100)
+        },
+        pr_07: {
+            begin: 128,
+            buffer: new ArrayBuffer(100)
+        },
+        em_01: {
+            begin: 9000,
+            buffer: new ArrayBuffer(100)
+        },
+        em_02: {
+            begin: 9200,
+            buffer: new ArrayBuffer(100)
+        },
+        em_06: {
+            begin: 9000,
+            buffer: new ArrayBuffer(100)
+        },
+        em_09: {
+            begin: 9000,
+            buffer: new ArrayBuffer(100)
+        },
+        em_13: {
+            begin: 9000,
+            buffer: new ArrayBuffer(100)
+        },
+        em_14: {
+            begin: 9000,
+            buffer: new ArrayBuffer(100)
+        },
+        em_07: {
+            begin: 9000,
+            buffer: new ArrayBuffer(100)
+        },
+        devices_state: new ArrayBuffer(15),
+        controls_state: new ArrayBuffer(15)
+
+    })
     useEffect(() => {
-        const svg = containerRef.current.querySelectorAll('.cell')[0];
-        for (let i = 1; i <= 3; i++) {
-            const kosomak = containerRef.current.querySelector('.L' + i)
-            kosomak.addEventListener('click', () => {
-                console.log('click')
-            })
+        console.log(containerRef.current.querySelector(".cell-containter-1"))
+        const sld1 = new SLD_Cell(containerRef.current.querySelector(".cell-containter-1"), dummyVals, 1, phaseRef);
+        const sld2 = new SLD_Cell(containerRef.current.querySelector(".cell-containter-2"), dummyVals, 2, phaseRef);
+        const sld6 = new SLD_Cell(containerRef.current.querySelector(".cell-containter-6"), dummyVals, 6, phaseRef);
+        const sld9 = new SLD_Cell(containerRef.current.querySelector(".cell-containter-9"), dummyVals, 9, phaseRef);
+        const sld13 = new SLD_Cell(containerRef.current.querySelector(".cell-containter-13"), dummyVals, 13, phaseRef);
+        const sld14 = new SLD_Cell(containerRef.current.querySelector(".cell-containter-14"), dummyVals, 14, phaseRef);
+        const sld7 = new SLD_Cell(containerRef.current.querySelector(".cell-containter-7"), dummyVals, 7, phaseRef);
+        let num = setInterval(() => {
+            let keys = [1, 2, 6, 9, 13, 14, 7]
+            for (let j = 0; j < keys.length; j++) {
+                let i = keys[j]
+                let key_pr = `pr_${i.toString().padStart(2, '0')}`;
+                let key_em = `em_${i.toString().padStart(2, '0')}`;
+                //console.log(dummyVals.current[`pr_${i.toString().padStart(2, '0')}`]);
+                const prArr = new Uint8Array(dummyVals.current[key_pr].buffer);
+                for (let k = 0; k < prArr.length; k++) {
+                    prArr[k] = Math.floor(Math.random() * 255);
+                }
+                //console.log(dummyVals.current[`em_${i.toString().padStart(2, '0')}`]);
+                const emArr = new Uint8Array(dummyVals.current[key_em].buffer);
+                for (let k = 0; k < emArr.length; k++) {
+                    emArr[k] = Math.floor(Math.random() * 255);
+                }
+            }
+            const devicesStateArr = new Uint8Array(dummyVals.current.devices_state);
+            for (let i = 0; i < devicesStateArr.length; i++) {
+                devicesStateArr[i] = Math.floor(Math.random() * 255);
+            }
+
+
+            SLD_Cell.updateAll();
+
+        }, 1000);
+        return () => {
+            clearInterval(num);
         }
-        const timeoutId = setInterval(() => {
+    }, []);
+    return (
+        <TransformWrapper
+            initialScale={1}
+            minScale={1}
+            maxScale={100}
+            step={0.005}
+            limitToBounds={true}
 
-            let rand1 = Math.random() > 0.5 ? true : false;
-            let rand2 = Math.random() > 0.5 ? true : false;
+        >
+            <TransformComponent contentStyle={{
+                placeContent: 'center',
+                height: '100%',
+                width: 'fit-content',
+                margin: '0 auto',
+                padding: '10px',
+                boxSizing: 'border-box'
+            }} wrapperStyle={{
+                height: '100%',
+                width: 'fit-content',
+                margin: '0 auto',
+                placeContent: 'center',
+                alignContent: 'center',
+                justifyContent: 'center',
+                boxSizing: 'border-box',
+            }}>
+                <div ref={containerRef} className="container" style={{ height: '100%' }}>
+                    <SLD ref={containerRef} style={{ width: '100%', height: '100%' }} />
+                </div>
+            </TransformComponent>
+        </TransformWrapper>
+    );
+}
 
-            if (svg) {
+export default SingleLineDiagram;
+
+/*
+
+*/
+
+/*
+ if (svg) {
                 containerRef.current.querySelector('.volt-value').textContent = ((Math.random() * 200) + 6500).toString().slice(0, 6)
                 const line11 = svg.querySelector('.line-1-1');
                 const line12 = svg.querySelector('.line-1-2');
@@ -60,40 +188,4 @@ function SingleLineDiagram() {
                     contact2.setAttribute('transform', `rotate(0,84.42218,96.211464)`)
                 }
             }
-        }, 500);
-        return () => clearInterval(timeoutId);
-    }, []);
-    return (
-        <TransformWrapper
-            initialScale={1}
-            minScale={1}
-            maxScale={100}
-            step={0.005}
-            limitToBounds={true}
-
-        >
-            <TransformComponent contentStyle={{
-                placeContent: 'center',
-                height: '100%',
-                width: 'fit-content',
-                margin: '0 auto',
-                padding: '10px',
-                boxSizing: 'border-box'
-            }} wrapperStyle={{
-                height: '100%',
-                width: 'fit-content',
-                margin: '0 auto',
-                placeContent: 'center',
-                alignContent: 'center',
-                justifyContent: 'center',
-                boxSizing: 'border-box',
-            }}>
-                <div ref={containerRef} className="container" style={{ height: '100%' }}>
-                    <SLD ref={containerRef} style={{ width: '100%', height: '100%' }} />
-                </div>
-            </TransformComponent>
-        </TransformWrapper>
-    );
-}
-
-export default SingleLineDiagram;
+                */

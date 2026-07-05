@@ -26,7 +26,7 @@ function App() {
   const refreshingCbk = useRef(null);
   const DBRef = useRef({
     "EM001": { startFrom: 0, length: 100, buffer: new Uint16Array(100) },
-    "EM002": { startFrom: 0, length: 100, buffer: new Uint16Array(100) }
+    "EM002": { startFrom: 0, length: 100, buffer: new Uint16Array(100) },
 
   });
   const [lastData, setLastData] = useState(null);
