@@ -1,0 +1,9 @@
+.lang-list> :hover {
+    background-color: rgba(36, 36, 31, 0.2);
+    transition: background-color 0.3s;
+}
+
+.lang-title:hover {
+    filter: opacity(1) !important;
+    transition: filter 0.3s;
+}

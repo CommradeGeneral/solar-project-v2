@@ -4,7 +4,7 @@ import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 import { ip, socketPort, webServerPort } from './config.js';
-
+import LangButton from './utilities/LangButton.jsx'
 
 function App() {
   const [username, setUsername] = useState("");
@@ -16,6 +16,9 @@ function App() {
     { text: "Password must contain at least one number", status: false },
     { text: "Password must contain at least one special character", status: false },
   ]);
+  let languageSettings = window.localStorage.getItem('language') ? JSON.parse(window.localStorage.getItem('language')) : { lang: 'en', dir: 'ltr' };
+  const [lang, setLang] = useState(languageSettings);
+
 
   const [isWrong, setIsWrong] = useState(false);
   return (
@@ -25,9 +28,10 @@ function App() {
       alignItems: 'center',
       height: '100vh',
       width: '100vw',
-      backgroundColor: 'rgba(4, 1, 74, 1)',
+      backgroundColor: 'rgba(6, 0, 96, 1)',
       margin: '0',
       boxSizing: 'border-box',
+      color: 'white'
     }}>
 
       <div style={{
@@ -109,9 +113,6 @@ function App() {
               // direct to main 
               fetch(`http://${ip}:${webServerPort}/api/login`, {
                 method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
                 body: JSON.stringify({
                   username: username,
                   password: password,
@@ -119,12 +120,22 @@ function App() {
               })
                 .then(res => res.json())
                 .then(data => {
-                  console.log(data);
+                  if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                  }
                 })
 
             }}
           >Login</button>
         </form>
+      </div>
+
+      <div style={{
+        position: 'absolute',
+        top: '10px',
+        right: '10px',
+      }}>
+        <LangButton lang={lang} setDir={setLang} />
       </div>
 
     </div >

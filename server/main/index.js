@@ -24,6 +24,8 @@ app.use(cors({
     credentials: true
 }))
 
+app.use(express.json());
+
 
 
 
@@ -46,6 +48,9 @@ app.get("/blab", (req, res) => {
     }, 10000);
 });
 
+app.post("/api/login", (req, res) => {
+    res.send({ redirectUrl: "/main" })
+});
 
 
 app.get(/(.*)/, (req, res) => {
