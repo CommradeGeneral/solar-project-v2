@@ -27,11 +27,6 @@ app.use(cors({
 app.use(express.json());
 
 
-
-
-
-
-
 app.use("/main", mainPageRouter);
 app.use("/login", loginRouter);
 app.get("/gloriousFiles/network.svg", (req, res) => {
