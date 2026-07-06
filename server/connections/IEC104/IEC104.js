@@ -160,7 +160,11 @@ class IEC104 extends EventEmitter {
 
     parseIFormat(data) {
         //this.N_R = (data[0] >> 1) + data[1] * 128;
-        this.N_S = (data[2] >> 1) + data[3] * 128;
+        if (this.N_S != (data[2] >> 1) + data[3] * 128) {
+            console.log("N(S) is not matching with expected value")
+            console.log("Expected N(S) = ", this.N_S, "Received N(S) = ", (data[2] >> 1) + data[3] * 128)
+
+        }
         this.N_R++;
         console.log("N(S) = ", this.N_S, "N(R) = ", this.N_R);
         let ASDU_format = data.subarray(4);

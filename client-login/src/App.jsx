@@ -6,21 +6,30 @@ import './App.css'
 import { ip, socketPort, webServerPort } from './config.js';
 import LangButton from './utilities/LangButton.jsx'
 
+const passwordValidationList = [
+  { en: "Password must be at least 8 characters long", ar: "يجب أن تكون كلمة المرور 8 أحرف على الأقل" },
+  { en: "Password must contain at least one uppercase letter", ar: "يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل" },
+  { en: "Password must contain at least one lowercase letter", ar: "يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل" },
+  { en: "Password must contain at least one number", ar: "يجب أن تحتوي كلمة المرور على رقم واحد على الأقل" },
+  { en: "Password must contain at least one special character", ar: "يجب أن تحتوي كلمة المرور على رمز خاص واحد على الأقل" },
+]
+
+const usernamePlaceHolder = { en: "Username", ar: "اسم المستخدم" }
+const passwordPlaceHolder = { en: "Password", ar: "كلمة المرور" }
+const loginButtonText = { en: "Login", ar: "تسجيل الدخول" }
+
+const pageTitle = { en: "Login", ar: "تسجيل الدخول" }
+
 function App() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [passwordValidation, setPasswordValidation] = useState([
-    { text: "Password must be at least 8 characters long", status: false },
-    { text: "Password must contain at least one uppercase letter", status: false },
-    { text: "Password must contain at least one lowercase letter", status: false },
-    { text: "Password must contain at least one number", status: false },
-    { text: "Password must contain at least one special character", status: false },
-  ]);
+  const [passwordValidation, setPasswordValidation] = useState([false, false, false, false, false]);
   let languageSettings = window.localStorage.getItem('language') ? JSON.parse(window.localStorage.getItem('language')) : { lang: 'en', dir: 'ltr' };
   const [lang, setLang] = useState(languageSettings);
-
-
   const [isWrong, setIsWrong] = useState(false);
+
+  document.title = pageTitle[lang.lang] || pageTitle['en'];
+
   return (
     <div style={{
       display: 'flex',
@@ -31,7 +40,8 @@ function App() {
       backgroundColor: 'rgba(6, 0, 96, 1)',
       margin: '0',
       boxSizing: 'border-box',
-      color: 'white'
+      color: 'white',
+      direction: lang.dir,
     }}>
 
       <div style={{
@@ -45,17 +55,27 @@ function App() {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-
+        width: '350px'
       }}
       >
-        <h1> Login to SCADA </h1>
+        <h1>
+          {
+            ((lang) => {
+              let titles = {
+                en: "Login to SCADA",
+                ar: "تسجيل الدخول"
+              }
+              return titles[lang.lang] || titles[en]
+            })(lang)
+          }
+        </h1>
         <form style={{
           display: 'flex',
           flexDirection: 'column',
           gap: '10px',
           justifyContent: 'center',
           alignItems: 'center',
-
+          width: "100%",
 
         }}>
           <div style={{
@@ -64,7 +84,7 @@ function App() {
             gap: '2px',
             width: "100%",
           }}>
-            <input type="text" placeholder='Username' style={{
+            <input type="text" placeholder={usernamePlaceHolder[lang.lang] || usernamePlaceHolder['en']} style={{
               width: "100%",
             }}
               onChange={(e) => {
@@ -75,17 +95,20 @@ function App() {
             display: 'flex',
             flexDirection: 'column',
             gap: '2px',
+            width: "100%",
           }}>
-            <input type="password" placeholder='Password'
+            <input style={{
+              width: "100%",
+            }} type="password" placeholder={passwordPlaceHolder[lang.lang] || passwordPlaceHolder['en']}
               onChange={(e) => {
                 setPassword(e.target.value);
                 // check all the conditions
                 setPasswordValidation([
-                  { text: "Password must be at least 8 characters long", status: e.target.value.length >= 8 ? true : false },
-                  { text: "Password must contain at least one uppercase letter", status: /[A-Z]/.test(e.target.value) ? true : false },
-                  { text: "Password must contain at least one lowercase letter", status: /[a-z]/.test(e.target.value) ? true : false },
-                  { text: "Password must contain at least one number", status: /[0-9]/.test(e.target.value) ? true : false },
-                  { text: "Password must contain at least one special character", status: /[^A-Za-z0-9]/.test(e.target.value) ? true : false },
+                  e.target.value.length >= 8 ? true : false,
+                  /[A-Z]/.test(e.target.value) ? true : false,
+                  /[a-z]/.test(e.target.value) ? true : false,
+                  /[0-9]/.test(e.target.value) ? true : false,
+                  /[^A-Za-z0-9]/.test(e.target.value) ? true : false,
                 ])
               }} value={password}
             />
@@ -94,11 +117,11 @@ function App() {
             }} className='password-instructions'>
               {passwordValidation.map((item, index) => (
                 <li key={index} style={{
-                  opacity: !item.status && !isWrong ? 0.2 : 1,
-                  color: item.status ? 'green' : isWrong ? 'red' : 'white',
-                }} className={item.status ? 'achieved' : ''}>
-                  <span className='symbol'> {item.status ? '✓' : isWrong ? '✗' : ''} </span>
-                  <span className='password-instruction-text'> {item.text} </span>
+                  opacity: !item && !isWrong ? 0.2 : 1,
+                  color: item ? 'green' : isWrong ? 'red' : 'white',
+                }} className={item ? 'achieved' : ''}>
+                  <span className='symbol'> {item ? '✓' : isWrong ? '✗' : ''} </span>
+                  <span className='password-instruction-text'> {passwordValidationList[index][lang.lang] || passwordValidationList[index]['en']} </span>
                 </li>
               ))}
             </ol>
@@ -126,14 +149,16 @@ function App() {
                 })
 
             }}
-          >Login</button>
+          >{loginButtonText[lang.lang] || loginButtonText['en']}</button>
         </form>
       </div>
 
       <div style={{
         position: 'absolute',
         top: '10px',
-        right: '10px',
+        right: lang.dir === 'ltr' ? '10px' : 'auto',
+        left: lang.dir === 'rtl' ? '10px' : 'auto',
+
       }}>
         <LangButton lang={lang} setDir={setLang} />
       </div>
