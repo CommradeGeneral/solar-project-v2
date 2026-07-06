@@ -40,8 +40,8 @@ class SLD_Cell {
         //console.log("EM:", this.energyMeter);
         let cell_elements = this.svgref.querySelector(".cell");
         let states = new Uint8Array(this.connections)[this.index - 1];
-        //states = 0x3
-        if ((states & 0x03) == 0x03) {
+        states = 0x3
+        if ((states & 0x03)) {
             cell_elements.style.opacity = '1';
         } else {
             cell_elements.style.opacity = '0.15';

@@ -151,7 +151,7 @@ class IEC104 extends EventEmitter {
         clearTimeout(this.t2.timer)
 
         this.sendData(Buffer.concat([header, buffer]), (e) => {
-            console.log('I am as cool a')
+            //console.log('I am as cool a')
             this.unackedPacketsSent++;
             this.N_S++;
             this._isSending = 0;
@@ -159,10 +159,10 @@ class IEC104 extends EventEmitter {
     }
 
     parseIFormat(data) {
-        this.N_R = (data[0] >> 1) + data[1] * 128;
+        //this.N_R = (data[0] >> 1) + data[1] * 128;
         this.N_S = (data[2] >> 1) + data[3] * 128;
         this.N_R++;
-        console.log("N(R) = ", this.N_R);
+        console.log("N(S) = ", this.N_S, "N(R) = ", this.N_R);
         let ASDU_format = data.subarray(4);
 
         this.unackedPackets++;
@@ -170,7 +170,7 @@ class IEC104 extends EventEmitter {
 
         this.emit('I-format', ASDU_format);
         if (this.unackedPackets >= this.w) {
-            console.log("W is over")
+            //console.log("W is over")
             this.sendSFormat();
 
         } else {
