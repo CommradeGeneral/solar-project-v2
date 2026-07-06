@@ -20,7 +20,7 @@ const app = express();
 const router = Router();
 
 app.use(cors({
-    origin: ["http://localhost:5173", `http://${ip} `],
+    origin: ["http://localhost:5173", `http://${ip}:${webServerPort}`],
     credentials: true
 }))
 
