@@ -7,8 +7,8 @@ import { Router } from "express";
 import favicon from "serve-favicon";
 import { join } from "path";
 import { fork } from "child_process";
-
-
+import mainPageRouter from "./routers/mainPage.js";
+import loginRouter from "./routers/login.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -27,36 +27,11 @@ app.use(cors({
 
 
 
-router.get("/favicon.svg", (req, res) => {
-    res.sendFile(path.join(__dirname, "../../client/dist/favicon.svg"));
-});
-
-router.get("/unjustking.svg", (req, res) => {
-    res.sendFile(path.join(__dirname, "../../client/dist/unjustking.svg"));
-});
 
 
 
-//app.use(express.static(path.join(__dirname, "../../client/dist")));
-router.get("/", (req, res, next) => {
-    res.redirect("/control-panel")
-    next()
-});
-// /assets/*
-app.get(/assets\/.*/, (req, res) => {
-    res.sendFile(path.join(__dirname, "../../client/dist" + req.url));
-})
-//app.use(express.static(path.join(__dirname, "../../client/dist/favicon.svg")));
-
-router.get(/(.*)/, (req, res) => {
-    res.sendFile(path.join(__dirname, "../../client/dist/index.html"));
-})
-
-
-
-
-app.use("/main", router);
-
+app.use("/main", mainPageRouter);
+app.use("/login", loginRouter);
 app.get("/gloriousFiles/network.svg", (req, res) => {
     let svgContnet = fs.readFileSync(path.join(__dirname, "../../client/src/assets/network.svg"));
     //console.log(svgContnet)
@@ -71,15 +46,11 @@ app.get("/blab", (req, res) => {
     }, 10000);
 });
 
-app.get("/login", (req, res) => {
-    setTimeout(() => {
-        res.end("kosomak");
-    }, 10000);
-})
+
 
 app.get(/(.*)/, (req, res) => {
     console.log("kosomak")
-    res.redirect(302, "/main/control-panel")
+    res.redirect(302, "/login")
 })
 
 
