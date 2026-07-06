@@ -1,0 +1,30 @@
+.password-instructions {
+  margin: 0;
+  padding: 10px 2px;
+  list-style-type: none;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.8rem;
+
+  >li {
+    display: flex;
+
+    &.achieved {
+      color: green;
+
+    }
+
+    >span {
+      display: block;
+    }
+
+    >.symbol {
+      width: 20px;
+    }
+
+
+
+  }
+}

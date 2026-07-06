@@ -1,0 +1,68 @@
+.main-card {
+    width: 220px;
+    height: 270px;
+    color: rgb(149, 149, 149);
+    background-color: rgba(0, 85, 254, 0.636);
+    filter: sepia(0.7) !important;
+    box-sizing: border-box;
+    font-size: 0.7rem;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 2px 9px 0px rgb(21, 0, 115);
+    border-radius: 10px;
+    overflow: hidden;
+    justify-content: space-between;
+    transition: all 0.5s ease;
+
+    .main-card-img {
+        transition: all 0.5s ease;
+    }
+
+    &:hover {
+        filter: sepia(0) !important;
+        transform: translateY(10px);
+        color: rgb(187, 187, 187);
+
+        .main-card-img:hover {
+            transform: scale(1.1);
+        }
+    }
+
+    .open-sld-btn {
+        border: none;
+        border-radius: 10px;
+        color: rgb(127, 127, 255);
+        padding: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        background: linear-gradient(45deg, rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 33%, rgba(2, 0, 36, 1) 66%, rgba(9, 9, 121, 1) 100%);
+        background-size: 200% 200%;
+        animation: grad 1s ease-in-out infinite;
+        animation-direction: alternate;
+        animation-play-state: paused;
+        transition: transform 0.2s ease;
+
+        &:hover {
+            animation-play-state: running;
+            transform: scale(1.03);
+        }
+
+        &:active {
+            filter: brightness(1.1);
+            transform: scale(0.99);
+        }
+    }
+}
+
+/* color gradient animation */
+@keyframes grad {
+    0% {
+        background-position: 0 0;
+    }
+
+
+
+    100% {
+        background-position: 100% 100%;
+    }
+}
