@@ -49,7 +49,6 @@ app.post("/api/login", (req, res) => {
 
 
 app.get(/(.*)/, (req, res) => {
-    console.log("kosomak")
     res.redirect(302, "/login")
 })
 
