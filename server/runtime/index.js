@@ -9,7 +9,7 @@ import ModBusDevices from "./database.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 let config = fs.readFileSync(join(__dirname, '../config.json'));
 config = JSON.parse(config);
-const { ip, socketPort, webServerPort } = config.netwotk;
+const { ip, socketPort, webServerPort } = config.network;
 
 
 

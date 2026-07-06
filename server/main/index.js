@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 
 let config = fs.readFileSync(join(__dirname, '../config.json'));
 config = JSON.parse(config);
-const { ip, socketPort, webServerPort } = config.netwotk;
+const { ip, socketPort, webServerPort } = config.network;
 
 const app = express();
 const router = Router();
