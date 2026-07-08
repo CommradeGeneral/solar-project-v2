@@ -72,7 +72,7 @@ class IEC104 extends EventEmitter {
                     break;
                 case 1:
 
-                    this.parseSFormat(control_fields);
+                    this.parseSFormat(data.subarray(2));
                     break;
                 case 3:
                     this.parseUFormat(control_fields);
@@ -144,29 +144,32 @@ class IEC104 extends EventEmitter {
             dat0, dat1,
             dat2, dat3
         ])
+        // console.log(header)
         //console.log("sending")
-        console.log("From I frame: ", this._isSending)
+        //console.log("From I frame: ", this._isSending)
         if (this._isSending == 1) return;
         this._isSending = 1;
         clearTimeout(this.t2.timer)
-
+        this.N_S++;
         this.sendData(Buffer.concat([header, buffer]), (e) => {
             //console.log('I am as cool a')
             this.unackedPacketsSent++;
-            this.N_S++;
+            //console.log("From I frame: N(S) before = ", this.N_S)
+            //console.log("From I frame: N(S) after = ", this.N_S)
             this._isSending = 0;
         })
     }
 
     parseIFormat(data) {
         //this.N_R = (data[0] >> 1) + data[1] * 128;
-        if (this.N_S != (data[2] >> 1) + data[3] * 128) {
-            console.log("N(S) is not matching with expected value")
-            console.log("Expected N(S) = ", this.N_S, "Received N(S) = ", (data[2] >> 1) + data[3] * 128)
+        //if (this.N_S != ((data[2] >> 1) + data[3] * 128)) {
+        //console.log(data)
+        //console.log("N(S) is not matching with expected value")
+        //console.log("Expected N(S) = ", this.N_S, "Received N(S) = ", (data[2] >> 1) + data[3] * 128)
 
-        }
+        //}
         this.N_R++;
-        console.log("N(S) = ", this.N_S, "N(R) = ", this.N_R);
+        //console.log("N(S) = ", this.N_S, "N(R) = ", this.N_R);
         let ASDU_format = data.subarray(4);
 
         this.unackedPackets++;
@@ -188,7 +191,10 @@ class IEC104 extends EventEmitter {
     }
 
     parseSFormat(data) {
-        this.N_S = data[2] / 2 + data[3] * 128;
+        //console.log("From S frame: N(S) before = ", this.N_S)
+        //console.log(data);
+        //this.N_S = (data[2] >> 1) + data[3] * 128;
+        //console.log("From S frame: N(S) after = ", this.N_S)
         this.unackedPacketsSent = 0;
         //this.sendSFormat();
     }
