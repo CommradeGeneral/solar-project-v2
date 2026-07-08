@@ -10,7 +10,8 @@
     "dev:main": "node --watch main/index.js",
     "dev:comm": "node --watch connections/modbus.js",
     "dev": "npm run dev:main & npm run dev:runtime & npm run dev:main",
-    "dev:iec": "node --watch connections/IEC104/index.js"
+    "dev:iec": "node --watch connections/IEC104/index.js",
+    "dev:opcua": "node --watch connections/OPC-UA/OPCUA.js"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +23,8 @@
     "jsmodbus": "^4.0.10",
     "modbus-serial": "^8.0.25",
     "node-ipc": "^12.0.0",
+    "node-opcua": "^2.174.0",
+    "opcua": "^1.0.0",
     "serve-favicon": "^2.5.1",
     "socket.io": "^4.8.1"
   }
