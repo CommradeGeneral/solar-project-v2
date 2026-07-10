@@ -9,6 +9,8 @@ import { join } from "path";
 import { fork } from "child_process";
 import mainPageRouter from "./routers/mainPage.js";
 import loginRouter from "./routers/login.js";
+import connect from "./database/database.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -20,7 +22,7 @@ const app = express();
 const router = Router();
 
 app.use(cors({
-    origin: ["http://localhost:5173", `http://${ip}:${webServerPort}`],
+    origin: ["http://localhost:5173", `http://${ip}${webServerPort == 80 ? '' : ':' + webServerPort}`],
     credentials: true
 }))
 
@@ -54,10 +56,13 @@ app.get(/(.*)/, (req, res) => {
 
 
 
-app.listen(webServerPort, ip, () => {
-    console.log("Server started on port", webServerPort);
-});
 
+
+connect().then(() => {
+    app.listen(webServerPort, ip, () => {
+        console.log("Server started on port", webServerPort);
+    });
+}).catch(err => console.log(err));
 
 // run modbus process
 const runtimeProcess = fork(join(__dirname, "../runtime/index.js"));
