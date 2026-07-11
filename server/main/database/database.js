@@ -14,12 +14,16 @@ function connect() {
     return new Promise((resolve, reject) => {
         sql.connect(dbConfig).then(() => {
             console.log('Connected to database');
+            // select * from users
+
             resolve();
         }).catch((err) => {
             console.log(err);
             reject(err);
         });
     });
+
+
 }
 
 export default connect;

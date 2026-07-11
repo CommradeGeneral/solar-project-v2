@@ -36,4 +36,5 @@ mainPageRouter.get(/(.*)/, (req, res) => {
 })
 
 
+
 export default mainPageRouter

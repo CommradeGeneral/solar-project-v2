@@ -10,6 +10,9 @@ import { fork } from "child_process";
 import mainPageRouter from "./routers/mainPage.js";
 import loginRouter from "./routers/login.js";
 import connect from "./database/database.js";
+import cookieParser from "cookie-parser";
+import authenticationRouter from "./routers/authentications.js";
+import authController from "./controllers/authentrication.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,10 +30,16 @@ app.use(cors({
 }))
 
 app.use(express.json());
-
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 
 app.use("/main", mainPageRouter);
 app.use("/login", loginRouter);
+
+app.use("/api", authenticationRouter);
+
+
+
 app.get("/gloriousFiles/network.svg", (req, res) => {
     let svgContnet = fs.readFileSync(path.join(__dirname, "../../client/src/assets/network.svg"));
     //console.log(svgContnet)
@@ -45,13 +54,18 @@ app.get("/blab", (req, res) => {
     }, 10000);
 });
 
-app.post("/api/login", (req, res) => {
-    res.send({ redirectUrl: "/main" })
-});
+
+
+
+
+app.get("/", (req, res) => {
+    res.redirect(302, "/login")
+})
 
 
 app.get(/(.*)/, (req, res) => {
-    res.redirect(302, "/login")
+    res.status(404).send("Not Found");
+    res.end();
 })
 
 
@@ -61,6 +75,7 @@ app.get(/(.*)/, (req, res) => {
 connect().then(() => {
     app.listen(webServerPort, ip, () => {
         console.log("Server started on port", webServerPort);
+
     });
 }).catch(err => console.log(err));
 
