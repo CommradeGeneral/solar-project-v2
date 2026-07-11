@@ -128,7 +128,28 @@ function App() {
           </div>
           <button type="submit" style={{}}
             onClick={(e) => {
+              e.preventDefault();
+              console.log(username, password)
               setIsWrong(true);
+              fetch(`http://${ip}${webServerPort == 80 ? '' : ':' + webServerPort}/api/login`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  username: username,
+                  password: password,
+                }),
+              })
+                .then(res => {
+                  console.log(res)
+                  if (res.ok || res.redirected) {
+                    window.location.href = '/main';
+                  } else {
+                    setIsWrong(true);
+                  }
+                })
+
             }}
           >{loginButtonText[lang.lang] || loginButtonText['en']}</button>
         </form>

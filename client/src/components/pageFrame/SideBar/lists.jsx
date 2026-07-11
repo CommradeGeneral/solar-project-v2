@@ -184,8 +184,8 @@ const list = [
 const userList = [
     {
         text: {
-            en: "User Settings",
-            ar: "إعدادات المستخدم",
+            en: "Users Management",
+            ar: "إدارة المستخمين",
         },
         pageName: "user-settings",
         element: ({ key = null, text, lang, page = '', setPage }) => {
@@ -217,7 +217,7 @@ const userList = [
                         localStorage.removeItem("token")
                     }}
                 >
-                    <a href="/login" className={`sidebar-li`} style={{
+                    <a href="/api/logout" className={`sidebar-li`} style={{
                         textDecoration: 'none',
                         color: 'inherit',
                         cursor: 'pointer'

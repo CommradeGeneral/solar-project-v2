@@ -1,5 +1,9 @@
 import sql from "mssql/msnodesqlv8.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "super_secret_access_token";
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "super_secret_refresh_token";
 
 const register = async (req, res) => {
     const { username, password } = req.body;
@@ -47,14 +51,52 @@ const login = async (req, res) => {
         return;
     }
     console.log("Password is valid")
+
+    const accessToken = jwt.sign(
+        { username: user.username, role: user.role },
+        JWT_SECRET,
+        { expiresIn: "1m" }
+    );
+
+    const refreshToken = jwt.sign(
+        { username: user.username, role: user.role },
+        JWT_REFRESH_SECRET,
+        { expiresIn: "7d" }
+    );
+
+    res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 15 * 60 * 1000 // 15 minutes
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
+    // Set non-HttpOnly cookies for frontend to read
+    res.cookie("username", user.username, {
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+    res.cookie("role", user.role, {
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
     // redirect page
-    res.status(200).json({ message: "Login successful" });
-    //res.redirect(302, "/main");
+    res.redirect(302, "/main");
 
 }
 
 const logout = (req, res) => {
-
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    res.clearCookie("username");
+    res.clearCookie("role");
+    res.redirect(302, "/login");
 }
 
 const authController = {

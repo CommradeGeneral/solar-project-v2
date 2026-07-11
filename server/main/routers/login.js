@@ -12,7 +12,7 @@ const loginRouter = Router()
 // /assets/*
 loginRouter.get(/^\/assets\/.*$/, (req, res) => {
     let url = req.url.replace(/^\/assets\//, '');
-    console.log(url)
+    //console.log(url)
     res.sendFile(path.join(__dirname, "../../../client-login/dist/assets/" + url));
 })
 //app.use(express.static(path.join(__dirname, "../../client/dist/favicon.svg")));

@@ -11,5 +11,6 @@ const authenticationRouter = Router()
 
 authenticationRouter.route("/register").post(authController.register)
 authenticationRouter.route("/login").post(authController.login)
+authenticationRouter.route("/logout").get(authController.logout).post(authController.logout)
 
 export default authenticationRouter

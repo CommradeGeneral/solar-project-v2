@@ -23,6 +23,7 @@
     "cors": "^2.8.5",
     "express": "^5.2.1",
     "jsmodbus": "^4.0.10",
+    "jsonwebtoken": "^9.0.3",
     "modbus-serial": "^8.0.25",
     "msnodesqlv8": "^5.2.1",
     "mssql": "^12.7.0",

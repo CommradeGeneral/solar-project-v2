@@ -13,6 +13,11 @@ import connect from "./database/database.js";
 import cookieParser from "cookie-parser";
 import authenticationRouter from "./routers/authentications.js";
 import authController from "./controllers/authentrication.js";
+import usersRouter from "./routers/users.js";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "super_secret_access_token";
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "super_secret_refresh_token";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,12 +36,73 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser())
+app.use(cookieParser());
 
-app.use("/main", mainPageRouter);
-app.use("/login", loginRouter);
+// Authentication middleware to check JWT validity
+const checkAuth = (req, res, next) => {
+    const accessToken = req.cookies.accessToken;
+    let isValid = false;
+    if (accessToken) {
+        try {
+            const decoded = jwt.verify(accessToken, JWT_SECRET);
+            req.user = decoded;
+            isValid = true;
+        } catch (e) {
+            isValid = false;
+        }
+    }
+
+    // If access token is expired/missing, try to use refresh token
+    if (!isValid) {
+        const refreshToken = req.cookies.refreshToken;
+        if (refreshToken) {
+            try {
+                const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+
+                // Refresh token is valid! Generate a new access token
+                const newAccessToken = jwt.sign(
+                    { username: decoded.username, role: decoded.role },
+                    JWT_SECRET,
+                    { expiresIn: "1m" }
+                );
+
+                res.cookie("accessToken", newAccessToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    maxAge: 60 * 1000 // 1 minute
+                });
+
+                req.user = { username: decoded.username, role: decoded.role };
+                isValid = true;
+            } catch (e) {
+                isValid = false; // Refresh token also invalid
+            }
+        }
+    }
+
+    req.isAuthenticated = isValid;
+    next();
+};
+
+app.use(checkAuth);
+
+app.use("/main", (req, res, next) => {
+    if (!req.isAuthenticated) {
+        return res.redirect(302, "/login");
+    }
+    next();
+}, mainPageRouter);
+
+app.use("/login", (req, res, next) => {
+    // Let authenticated users bypass the login page
+    if (req.isAuthenticated) {
+        return res.redirect(302, "/main");
+    }
+    next();
+}, loginRouter);
 
 app.use("/api", authenticationRouter);
+app.use("/api/users", usersRouter);
 
 
 
@@ -55,12 +121,13 @@ app.get("/blab", (req, res) => {
 });
 
 
-
-
-
 app.get("/", (req, res) => {
-    res.redirect(302, "/login")
-})
+    if (req.isAuthenticated) {
+        res.redirect(302, "/main");
+    } else {
+        res.redirect(302, "/login");
+    }
+});
 
 
 app.get(/(.*)/, (req, res) => {
