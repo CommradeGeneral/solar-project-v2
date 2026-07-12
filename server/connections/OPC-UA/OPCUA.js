@@ -2,7 +2,9 @@ import {
     OPCUAClient,
     MessageSecurityMode,
     SecurityPolicy,
-    AttributeIds
+    AttributeIds,
+    DataType,
+    Variant
 } from "node-opcua";
 
 
@@ -37,14 +39,14 @@ async function browseNode(session, nodeId, indent = "") {
 (async () => {
 
     const client = OPCUAClient.create({
-        securityMode: MessageSecurityMode.None,
-        securityPolicy: SecurityPolicy.None,
         endpointMustExist: false
     });
 
     try {
 
         await client.connect("opc.tcp://192.168.0.1:4840");
+
+
 
         console.log("Connected");
 
@@ -57,15 +59,43 @@ async function browseNode(session, nodeId, indent = "") {
         //await browseNode(session, "ns=3;s=PLC");
         console.log("\nBrowsing PLC...\n");
 
-        await browseNode(session, "ns=3;s=DataBlocksGlobal");
+        //await browseNode(session, "ns=3;s=DataBlocksGlobal");
+        //const ns = await session.readNamespaceArray();
+        //console.log(ns);        //const result = await session.browse("ns=3;s=Data_block_1");
 
-        const dv = await session.read({
-            nodeId: 'ns=3;i=5202',
+        //const result = await session.browse('ns=3;s="Data_block_1"."Motor"[1]."Line voltage"');
+        //console.dir(result.references, { depth: null });
+
+        /*const dv = await session.read({
+            nodeId: 'ns=3;s="Data_block_1"."Motor"[0]."Line voltage"',
             attributeId: AttributeIds.Value
         });
 
-        console.log(dv.value.value);
+        console.log(dv.value.value);*/
 
+        const status = await session.write({
+            nodeId: 'ns=3;s="Data_block_1"."Motor"[0]."Line voltage"',
+            attributeId: AttributeIds.Value,
+            value: {
+                value: new Variant({
+                    dataType: DataType.Float,
+                    value: [1500, 1500, 1500]
+                })
+            }
+        });
+
+        console.log(status.toString()); // Should print "Good"
+        //console.log(result.references);
+
+        /*await browseNode(session, "ns=3;s=DataBlocksGlobal.Motor");
+
+        const dv = await session.read({
+            nodeId: "ns=3;s=DataBlocksGlobal.Data_block_1.Motor[1].Active power",
+            attributeId: AttributeIds.Value
+        });
+
+        console.log(dv.value.value);*/
+        //await browseNode(session, "ns=3;s=Memory");
         await session.close();
 
         await client.disconnect();
