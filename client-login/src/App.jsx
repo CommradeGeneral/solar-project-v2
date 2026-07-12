@@ -69,14 +69,13 @@ function App() {
             })(lang)
           }
         </h1>
-        <form style={{
+        <form action={`http://${ip}${webServerPort == 80 ? '' : ':' + webServerPort}/api/login`} method="POST" style={{
           display: 'flex',
           flexDirection: 'column',
           gap: '10px',
           justifyContent: 'center',
           alignItems: 'center',
           width: "100%",
-
         }}>
           <div style={{
             display: 'flex',
@@ -84,7 +83,7 @@ function App() {
             gap: '2px',
             width: "100%",
           }}>
-            <input type="text" placeholder={usernamePlaceHolder[lang.lang] || usernamePlaceHolder['en']} style={{
+            <input type="text" name="username" placeholder={usernamePlaceHolder[lang.lang] || usernamePlaceHolder['en']} style={{
               width: "100%",
             }}
               onChange={(e) => {
@@ -99,7 +98,7 @@ function App() {
           }}>
             <input style={{
               width: "100%",
-            }} type="password" placeholder={passwordPlaceHolder[lang.lang] || passwordPlaceHolder['en']}
+            }} type="password" name="password" placeholder={passwordPlaceHolder[lang.lang] || passwordPlaceHolder['en']}
               onChange={(e) => {
                 setPassword(e.target.value);
                 // check all the conditions
@@ -127,24 +126,27 @@ function App() {
             </ol>
 
           </div>
-          <button type="submit" style={{
-          }}
+          <button type="submit" style={{}}
             onClick={(e) => {
               e.preventDefault();
+              console.log(username, password)
               setIsWrong(true);
-              // check if 
-              // direct to main 
-              fetch(`http://${ip}:${webServerPort}/api/login`, {
+              fetch(`http://${ip}${webServerPort == 80 ? '' : ':' + webServerPort}/api/login`, {
                 method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
                 body: JSON.stringify({
                   username: username,
                   password: password,
                 }),
               })
-                .then(res => res.json())
-                .then(data => {
-                  if (data.redirectUrl) {
-                    window.location.href = data.redirectUrl;
+                .then(res => {
+                  console.log(res)
+                  if (res.ok || res.redirected) {
+                    window.location.href = '/main';
+                  } else {
+                    setIsWrong(true);
                   }
                 })
 

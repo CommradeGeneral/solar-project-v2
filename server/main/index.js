@@ -9,6 +9,16 @@ import { join } from "path";
 import { fork } from "child_process";
 import mainPageRouter from "./routers/mainPage.js";
 import loginRouter from "./routers/login.js";
+import connect from "./database/database.js";
+import cookieParser from "cookie-parser";
+import authenticationRouter from "./routers/authentications.js";
+import authController from "./controllers/authentrication.js";
+import usersRouter from "./routers/users.js";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "super_secret_access_token";
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "super_secret_refresh_token";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -20,15 +30,82 @@ const app = express();
 const router = Router();
 
 app.use(cors({
-    origin: ["http://localhost:5173", `http://${ip}:${webServerPort}`],
+    origin: ["http://localhost:5173", `http://${ip}${webServerPort == 80 ? '' : ':' + webServerPort}`],
     credentials: true
 }))
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// Authentication middleware to check JWT validity
+const checkAuth = (req, res, next) => {
+    const accessToken = req.cookies.accessToken;
+    let isValid = false;
+    if (accessToken) {
+        try {
+            const decoded = jwt.verify(accessToken, JWT_SECRET);
+            req.user = decoded;
+            isValid = true;
+        } catch (e) {
+            isValid = false;
+        }
+    }
+
+    // If access token is expired/missing, try to use refresh token
+    if (!isValid) {
+        const refreshToken = req.cookies.refreshToken;
+        if (refreshToken) {
+            try {
+                const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+
+                // Refresh token is valid! Generate a new access token
+                const newAccessToken = jwt.sign(
+                    { username: decoded.username, role: decoded.role },
+                    JWT_SECRET,
+                    { expiresIn: "1m" }
+                );
+
+                res.cookie("accessToken", newAccessToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    maxAge: 60 * 1000 // 1 minute
+                });
+
+                req.user = { username: decoded.username, role: decoded.role };
+                isValid = true;
+            } catch (e) {
+                isValid = false; // Refresh token also invalid
+            }
+        }
+    }
+
+    req.isAuthenticated = isValid;
+    next();
+};
+
+app.use(checkAuth);
+
+app.use("/main", (req, res, next) => {
+    if (!req.isAuthenticated) {
+        return res.redirect(302, "/login");
+    }
+    next();
+}, mainPageRouter);
+
+app.use("/login", (req, res, next) => {
+    // Let authenticated users bypass the login page
+    if (req.isAuthenticated) {
+        return res.redirect(302, "/main");
+    }
+    next();
+}, loginRouter);
+
+app.use("/api", authenticationRouter);
+app.use("/api/users", usersRouter);
 
 
-app.use("/main", mainPageRouter);
-app.use("/login", loginRouter);
+
 app.get("/gloriousFiles/network.svg", (req, res) => {
     let svgContnet = fs.readFileSync(path.join(__dirname, "../../client/src/assets/network.svg"));
     //console.log(svgContnet)
@@ -43,21 +120,31 @@ app.get("/blab", (req, res) => {
     }, 10000);
 });
 
-app.post("/api/login", (req, res) => {
-    res.send({ redirectUrl: "/main" })
+
+app.get("/", (req, res) => {
+    if (req.isAuthenticated) {
+        res.redirect(302, "/main");
+    } else {
+        res.redirect(302, "/login");
+    }
 });
 
 
 app.get(/(.*)/, (req, res) => {
-    res.redirect(302, "/login")
+    res.status(404).send("Not Found");
+    res.end();
 })
 
 
 
-app.listen(webServerPort, ip, () => {
-    console.log("Server started on port", webServerPort);
-});
 
+
+connect().then(() => {
+    app.listen(webServerPort, ip, () => {
+        console.log("Server started on port", webServerPort);
+
+    });
+}).catch(err => console.log(err));
 
 // run modbus process
 const runtimeProcess = fork(join(__dirname, "../runtime/index.js"));

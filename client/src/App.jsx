@@ -13,6 +13,7 @@ import SingleLineDiagram from './components/pages/single-line-diagram/SingleLine
 import { io } from 'socket.io-client';
 import { ip, socketPort, webServerPort } from './config.js';
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import UserSetting from './components/pages/userSetting/UserSetting';
 
 function App() {
   let languageSettings = window.localStorage.getItem('language') ? JSON.parse(window.localStorage.getItem('language')) : { lang: 'en', dir: 'ltr' };
@@ -108,6 +109,7 @@ function App() {
     "main/devices-list/inverter": <h1>4</h1>,
     "main/devices-list/energy-meter": <PowerMeter language={dir} />,
     "main/5": <h1>5</h1>,
+    "main/user-setting": <UserSetting dir={dir} />,
   }
   return (
     <>

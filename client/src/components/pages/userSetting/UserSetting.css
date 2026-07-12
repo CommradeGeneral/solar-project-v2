@@ -1,0 +1,59 @@
+.setting-input {
+    font-family: 'Cairo', sans-serif;
+    background-color: transparent;
+    outline: none;
+    color: white;
+    border: none;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgb(2, 19, 148);
+
+    &::placeholder {
+        color: rgba(217, 223, 255, 0.5);
+    }
+
+    &:focus {
+        background-color: rgb(2, 19, 148);
+
+    }
+}
+
+.setting-button {
+    font-family: 'Cairo', sans-serif;
+    background-color: transparent;
+    outline: none;
+    color: white;
+    border: none;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgb(2, 19, 148);
+    font-weight: bold;
+    width: fit-content;
+    cursor: pointer;
+    padding: 10px;
+
+    &:active {
+        background-color: rgb(2, 19, 148);
+
+    }
+}
+
+@keyframes slideDownUp {
+    0% {
+        top: calc(-100%);
+    }
+
+    5% {
+        top: 0px;
+    }
+
+    95% {
+        top: 0px;
+    }
+
+    100% {
+        top: calc(-100%);
+    }
+}
