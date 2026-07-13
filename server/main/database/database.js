@@ -1,11 +1,13 @@
 import sql from 'mssql/msnodesqlv8.js';
 
 const dbConfig = {
-    server: 'ELKORSAN',
+    server: 'localhost',
     database: 'dummydb',
+    driver: 'ODBC Driver 17 for SQL Server',
+    user: 'sa',
+    password: '123456789',
     options: {
         // windows authentication
-        trustedConnection: true
     }
 }
 

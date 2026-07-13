@@ -11,7 +11,8 @@
     "dev:comm": "node --watch connections/modbus.js",
     "dev": "npm run dev:main & npm run dev:runtime & npm run dev:main",
     "dev:iec": "node --watch connections/IEC104/index.js",
-    "dev:opcua": "node --watch connections/OPC-UA/OPCUA.js"
+    "dev:opcua": "node --watch connections/OPC-UA/OPCUA.js",
+    "dev:addUser": "node --watch main/addUserManually.js"
   },
   "keywords": [],
   "author": "",
