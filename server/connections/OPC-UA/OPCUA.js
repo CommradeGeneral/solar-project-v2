@@ -39,12 +39,12 @@ async function browseNode(session, nodeId, indent = "") {
 (async () => {
 
     const client = OPCUAClient.create({
-        endpointMustExist: false
+        endpointMustExist: true,
     });
 
     try {
 
-        await client.connect("opc.tcp://192.168.0.1:4840");
+        await client.connect("opc.tcp://192.168.0.20:4840");
 
 
 
@@ -54,9 +54,11 @@ async function browseNode(session, nodeId, indent = "") {
 
         console.log("Session created");
 
+        console.log(session)
+
         console.log("\nBrowsing PLC...\n");
 
-        //await browseNode(session, "ns=3;s=PLC");
+        await browseNode(session, session.sessionId);
         console.log("\nBrowsing PLC...\n");
 
         //await browseNode(session, "ns=3;s=DataBlocksGlobal");
@@ -74,17 +76,23 @@ async function browseNode(session, nodeId, indent = "") {
         console.log(dv.value.value);*/
 
         const status = await session.write({
-            nodeId: 'ns=3;s="Data_block_1"."Motor"[0]."Line voltage"',
+            nodeId: 'ns=3;s="OUTPUTS"',
             attributeId: AttributeIds.Value,
             value: {
                 value: new Variant({
-                    dataType: DataType.Float,
-                    value: [1500, 1500, 1500]
+                    dataType: DataType.Int16,
+                    value: 0x7FFF
                 })
             }
         });
 
-        console.log(status.toString()); // Should print "Good"
+        console.log(status); // Should print "Good"
+
+        const stat = await session.read({
+            nodeId: 'ns=3;s="INPUTS"',
+            attributeId: AttributeIds.UInt32,
+        })
+        console.log(stat.value.value)
         //console.log(result.references);
 
         /*await browseNode(session, "ns=3;s=DataBlocksGlobal.Motor");

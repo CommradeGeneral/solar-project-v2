@@ -31,6 +31,11 @@ const addUser = async (req, res) => {
     if (!username || !password || !role) {
         return res.status(400).json({ message: errorCodes[4], errorCode: 4 });
     }
+    // chech if table exists 
+    const { recordset: tableExists } = await sql.query`SELECT * FROM users`;
+    if (tableExists.length === 0) {
+        await createTable();
+    }
     try {
         const { recordset: existing } = await sql.query`SELECT * FROM users WHERE username = ${username}`;
         if (existing.length > 0) {
@@ -41,6 +46,27 @@ const addUser = async (req, res) => {
         res.json({ message: { en: "User added successfully", ar: "تم إضافة المستخدم بنجاح" } });
     } catch (error) {
         res.status(500).json({ message: errorCodes[1], errorCode: 1 });
+    }
+};
+
+const addUserManually = async (username, password, role) => {
+    if (!username || !password || !role) {
+        return;
+    }
+    // chech if table exists 
+    const { recordset: tableExists } = await sql.query`SELECT * FROM users`;
+    if (tableExists.length === 0) {
+        await createTable();
+    }
+    try {
+        const { recordset: existing } = await sql.query`SELECT * FROM users WHERE username = ${username}`;
+        if (existing.length > 0) {
+            return console.log(errorCodes[2]);
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await sql.query`INSERT INTO users (username, password, role) VALUES (${username}, ${hashedPassword}, ${role})`;
+    } catch (error) {
+        console.log(error);
     }
 };
 
@@ -60,4 +86,14 @@ const deleteUser = async (req, res) => {
     }
 };
 
-export default { getUsers, addUser, deleteUser };
+
+const createTable = async () => {
+    try {
+        await sql.query`CREATE TABLE users (username VARCHAR(50) PRIMARY KEY, password VARCHAR(60) NOT NULL, role VARCHAR(50) NOT NULL DEFAULT 'user')`;
+        console.log("Table created successfully");
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export default { getUsers, addUser, addUserManually, deleteUser };

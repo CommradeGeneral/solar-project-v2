@@ -101,9 +101,9 @@ app.use("/login", (req, res, next) => {
     }
     next();
 }, loginRouter);
-
-app.use("/api", authenticationRouter);
 app.use("/api/users", usersRouter);
+app.use("/api", authenticationRouter);
+
 
 
 
