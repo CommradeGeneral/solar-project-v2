@@ -15,6 +15,7 @@ import authenticationRouter from "./routers/authentications.js";
 import authController from "./controllers/authentrication.js";
 import usersRouter from "./routers/users.js";
 import jwt from "jsonwebtoken";
+import net from "net";
 
 const JWT_SECRET = process.env.JWT_SECRET || "super_secret_access_token";
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "super_secret_refresh_token";
@@ -147,8 +148,25 @@ connect().then(() => {
 }).catch(err => console.log(err));
 
 // run modbus process
+/*
 const runtimeProcess = fork(join(__dirname, "../runtime/index.js"));
 
 runtimeProcess.on("message", (data) => {
-    //cnsole.log(data);
+    console.log(data);
+});
+*/
+
+// interprocessing communication
+
+const server = net.createServer((socket) => {
+    console.log("Client connected");
+    socket.on("data", (data) => {
+        console.log(JSON.parse(data));
+    });
+    socket.on("close", () => {
+        console.log("Client disconnected");
+    });
+});
+server.listen("\\\\.\\pipe\\runtime", () => {
+    console.log("Server started to the IPC");
 });

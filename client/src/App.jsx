@@ -15,6 +15,8 @@ import { ip, socketPort, webServerPort } from './config.js';
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import UserSetting from './components/pages/userSetting/UserSetting';
 
+
+
 function App() {
   let languageSettings = window.localStorage.getItem('language') ? JSON.parse(window.localStorage.getItem('language')) : { lang: 'en', dir: 'ltr' };
   console.log(" language settings: ", languageSettings);
@@ -25,6 +27,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const socketRef = useRef(null);
   const refreshingCbk = useRef(null);
+
   const DBRef = useRef({
     "EM001": { startFrom: 0, length: 100, buffer: new Uint16Array(100) },
     "EM002": { startFrom: 0, length: 100, buffer: new Uint16Array(100) },
@@ -86,10 +89,8 @@ function App() {
       console.log("Connected to server", mysocket.id, ' timestamp', new Date().toLocaleTimeString());
       mysocket.emit("page", [
         { deviceID: ["LOG001", "EM003"], startFrom: 8, length: 1 },
+        { deviceID: ["LOG001", "EM001"], startFrom: 8, length: 1 },
       ]);
-      mysocket.on("data-exchange", (data) => {
-        console.log("main socket recieves");
-      });
     });
 
 

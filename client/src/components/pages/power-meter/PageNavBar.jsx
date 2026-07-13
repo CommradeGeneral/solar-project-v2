@@ -5,10 +5,22 @@ import {
 import "overlayscrollbars/overlayscrollbars.css";
 import './PageNavBar.css'
 
+import { io } from 'socket.io-client';
+import { ip, socketPort } from '../../../config';
+
 function PageNavBar({ language }) {
     const [optionsOpen, setOptionsOpen] = useState(false);
     const [optionIndex, setOptionIndex] = useState(0);
     const optionRef = useRef(null);
+
+
+    useEffect(() => {
+        let sock = io(`ws://${ip}:${socketPort}`);
+        sock.emit('page', [
+            { deviceID: ["LOG001", `EM00${optionIndex + 1}`], startFrom: 0, length: 50 },
+        ])
+        return () => sock.disconnect()
+    }, [optionIndex])
 
 
     const energyMeterList = [
@@ -177,7 +189,7 @@ function PageNavBar({ language }) {
                 }}>
                     {energyMeterList.map((item, i) => {
                         return (
-                            <div className={`nav-option-item ${i === optionIndex ? 'active' : ''}`} onClick={() => setOptionIndex(i)}>
+                            <div key={i} className={`nav-option-item ${i === optionIndex ? 'active' : ''}`} onClick={() => setOptionIndex(i)}>
                                 <div className={`status-part ${item.status}`}>
 
                                 </div>

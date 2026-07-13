@@ -3,6 +3,8 @@ import {
     OverlayScrollbarsComponent
 } from 'overlayscrollbars-react';
 import "overlayscrollbars/overlayscrollbars.css";
+
+
 function PowerMeter({ language }) {
     return (
         <div style={{
