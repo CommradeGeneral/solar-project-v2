@@ -209,6 +209,8 @@ class ModbusClient extends EventEmitter {
 
         this._cleanupSocket();
     }
+
+
 }
 
 export default ModbusClient;
@@ -243,4 +245,4 @@ setInterval(() => {
     }).catch((err) => {
         // errors are surfaced here; the client will reconnect automatically
     });
-}, 10);
+}, 10); 

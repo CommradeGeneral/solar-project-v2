@@ -29,20 +29,20 @@ function Network({ dir, socket, refreshincCbk, buffRef, setLastData }) {
             ]);
             sock.on("data-exchange", (data) => {
                 if (!loaded) setLoaded(true)
-
-                let buff = new Uint16Array(data.buff)
+                console.log(data);
+                //let buff = new Uint16Array(data.buff)
                 // console.log('buff => ', buff[0])
                 //console.log(data.deviceID[1], '=>', buff)
                 //console.log(buffRef.current[data.deviceID[1]])
                 //console.log(data)
-                for (let i = 0; i < buff.length; i++) {
+                /*for (let i = 0; i < buff.length; i++) {
                     buffRef.current[data.deviceID[1]].buffer[i + data.startFrom] = buff[i];
-                }
-                let val = buffRef.current["EM001"].buffer[3]
+                }*/
+                //let val = buffRef.current["EM001"].buffer[3]
                 //svgRef.current.querySelector('.' + `pr-01`).classList.add('online')
                 if (!svgRef.current) return;
                 //console.log("svg element len (text) = ", svgRef.current.querySelectorAll('text').length)
-                for (let i = 1; i <= 14; i++) {
+                /*for (let i = 1; i <= 14; i++) {
                     if ((val & (1 << (i - 1))) != 0) {
                         svgRef.current.querySelector('.' + `pr-${i.toString().padStart(2, '0')}`).classList.add('online');
                         svgRef.current.querySelector('.signal-' + `pr-${i.toString().padStart(2, '0')}`).classList.add('online');
@@ -51,7 +51,7 @@ function Network({ dir, socket, refreshincCbk, buffRef, setLastData }) {
                         svgRef.current.querySelector('.signal-' + `pr-${i.toString().padStart(2, '0')}`).classList.remove('online');
 
                     }
-                }
+                }*/
             });
         });
 

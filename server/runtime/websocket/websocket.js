@@ -26,15 +26,13 @@ mysocket.on("connection", (socket) => {
     socket.on("page", (data) => {
         registeredSockets.push({
             id: socket.id,
-            //socket: socket,
+            socket: socket,
             data: data
         })
-        console.log(registeredSockets);
     })
     socket.on("disconnect", () => {
         registeredSockets = registeredSockets.filter((item) => item.id !== socket.id);
         console.log("client disconnected");
-        console.log(registeredSockets);
     });
 });
 
