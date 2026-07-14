@@ -29,11 +29,24 @@ mysocket.on("connection", (socket) => {
             socket: socket,
             data: data
         })
+        printData(registeredSockets)
     })
     socket.on("disconnect", () => {
         registeredSockets = registeredSockets.filter((item) => item.id !== socket.id);
         console.log("client disconnected");
+        printData(registeredSockets)
+
     });
 });
+
+function printData(arr) {
+    console.log("==============")
+    arr.map(
+        (item, index) => {
+            console.log(`socketId: ${item.id} socketData: ${item.data}`)
+        }
+    )
+    console.log("==============")
+}
 
 export { registeredSockets, mysocket }
