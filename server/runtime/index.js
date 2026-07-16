@@ -1,10 +1,9 @@
 import { Server } from "socket.io";
 import net from "net";
 
-import "./websocket/websocket.js"
-
-import "./toClientLoop/clientloop.js"
-
+import "../connections/modbus.js";       // initializes all ModbusClient instances
+import "./websocket/websocket.js";
+import "./toClientLoop/clientloop.js";
 
 
 

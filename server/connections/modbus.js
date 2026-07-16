@@ -2,6 +2,7 @@ import Modbus from 'jsmodbus';
 import net from 'net';
 import { EventEmitter } from 'events';
 
+
 class ModbusClient extends EventEmitter {
     /**
      * @param {object} options
@@ -80,7 +81,8 @@ class ModbusClient extends EventEmitter {
                 byteSize: size,
                 quantity: item.size,
                 buffer: Buffer.alloc(size, 0, type),
-                unitId: item.slaveID
+                unitId: item.slaveID,
+                deviceName: item.deviceName
             }
         })
         this.loopTimer = null;
@@ -135,8 +137,8 @@ class ModbusClient extends EventEmitter {
         this._socket.on('timeout', () => {
             // Destroy the socket so the 'close' event fires and reconnect is triggered.
             this.status = ModbusClient.STATUS.TIMEOUT;
-            this.emit('timeout');
-            this._socket.destroy();
+            /*this.emit('timeout');
+            this._socket.destroy();*/
         });
 
         this._socket.on('close', (hadError) => {
@@ -295,6 +297,7 @@ class ModbusClient extends EventEmitter {
             while (accumlatedSize < item.quantity) {
                 const chunkSize = Math.min(this.maxReadSize, item.quantity - accumlatedSize);
                 list.push({
+                    deviceName: item.deviceName,
                     unitId: item.unitId,
                     memoryAreaIndex: index,
                     start: item.start + accumlatedSize,
@@ -331,6 +334,13 @@ class ModbusClient extends EventEmitter {
                 const response = await this._client.readHoldingRegisters(item.start, item.quantity);
                 this.status = ModbusClient.STATUS.CONNECTED;
                 const buffer = response.response.body.valuesAsBuffer;
+                this.emit('data-fetched', {
+                    deviceName: item.deviceName,
+                    memoryStart: item.start,
+                    memoryAreaIndex: item.memoryAreaIndex,
+                    quantity: item.quantity,
+                    buffer: buffer
+                })
                 const oldBuff = this.readMemoryArea[item.memoryAreaIndex].buffer;
                 for (let i = 0; i < item.quantity * 2; i++) {
                     oldBuff[i + item.bufferIndex * 2] = buffer[i];
@@ -341,6 +351,7 @@ class ModbusClient extends EventEmitter {
                     this.status = ModbusClient.STATUS.TIMEOUT;
                     console.log("[modbus] timeout: " + new Date().toLocaleString())
                 }
+                console.log("dddd")
             }
         }
 
@@ -348,7 +359,7 @@ class ModbusClient extends EventEmitter {
     }
 }
 
-
+/*
 
 let modbus_new = new ModbusClient({
     host: '192.168.0.20',
@@ -375,6 +386,70 @@ modbus_new.on('reconnect', () => console.log("[modbus1] reconnect: " + new Date(
 modbus_new.on('timeout', () => console.log("[modbus1] timeout: " + new Date().toLocaleString()))
 modbus_new.on('warn', (message) => console.log("[modbus1] warn: " + new Date().toLocaleString(), message))
 
+*/
+
 
 
 export default ModbusClient;
+
+// ── Device initialization ────────────────────────────────────────────────────
+// Import the raw device config and attach a live ModbusClient to each entry.
+// • Gateway devices (LOG001, LOG002): one TCP connection whose readMemoryArea
+//   spans all RTU sub-devices, each with its own slaveID.
+// • Direct TCP devices (PR001–PR014): one dedicated TCP connection per device.
+
+import ModBusDevices from '../runtime/database.js';
+
+ModBusDevices.forEach(device => {
+    let readMemoryArea;
+
+    if (device.RtuDevices) {
+        // Multi-drop RS-485 gateway: flatten all sub-device areas into one list.
+        readMemoryArea = device.RtuDevices.flatMap(rtu =>
+            rtu.areas.map(area => ({
+                deviceName: `${device.name}/${rtu.name}`,
+                slaveID: rtu.slaveID,
+                functionCode: area.fc,
+                start: area.start,
+                size: area.len
+            }))
+        );
+    } else {
+        // Direct Modbus TCP device.
+        readMemoryArea = device.areas.map(area => ({
+            deviceName: device.name,
+            slaveID: device.slaveID,
+            functionCode: area.fc,
+            start: area.start,
+            size: area.len
+        }));
+    }
+
+    device.client = new ModbusClient({
+        host: device.ip,
+        port: parseInt(device.port),
+        deviceName: device.name,
+        readMemoryArea,
+        loopDelay: 200,
+        reconnectDelay: 3000,
+        maxReconnectDelay: 3000,
+        maxReadSize: 120
+    });
+
+    console.log(device.client.areaPartition())
+
+    device.client.on('connect', () => console.log(`[${device.name}] connected`));
+    //device.client.on('close', () => console.log(`[${device.name}] connection closed`));
+    device.client.on('error', (err) => {
+        //console.log(`[${device.name}] error:`, err.message)
+    });
+    device.client.on('data', (d) => {
+        //console.log(device.name, ":", d)
+    },)
+
+    device.client.on('data-fetched', (e) => {
+        console.log(e)
+    })
+    //device.client.on('timeout', () => console.log(`[${device.name}] timeout`));
+    //device.client.on('reconnecting', ({ delay }) => console.log(`[${device.name}] reconnecting in ${delay}ms`));
+});

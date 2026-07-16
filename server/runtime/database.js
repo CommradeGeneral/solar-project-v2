@@ -1,3 +1,4 @@
+
 /*let LOG001_devices = {
     "EM001": { name: "EM001", slaveID: 1, fc: 3, start: 0x0000, buff: Buffer.alloc(120), connectionStat: 0, penality: 0, socketClients: new Map() },
     "EM002": { name: "EM002", slaveID: 1, fc: 3, start: 0x0000, buff: Buffer.alloc(100), connectionStat: 0, penality: 0, socketClients: new Map() },
@@ -5,155 +6,154 @@
     "EM004": { name: "EM004", slaveID: 1, fc: 3, start: 0x0000, buff: Buffer.alloc(100), connectionStat: 0, penality: 0, socketClients: new Map() },
 }
 */
-let ModBusDevices = {
-    "LOG001": {
+let ModBusDevices = [
+    {
         name: "LOG001",
-        ip: "[IP_ADDRESS]",
+        ip: "127.0.0.21",
         port: 502,
         type: "modbus",
-        devices: {
-            "EM001": { name: "EM001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-            "EM002": { name: "EM002", slaveID: 2, fc: 3, start: 0x0000, buff: new Uint16Array(100), connectionStat: 0, penality: 0, socketClients: new Map() },
-            "EM003": { name: "EM003", slaveID: 3, fc: 3, start: 0x0000, buff: new Uint16Array(100), connectionStat: 0, penality: 0, socketClients: new Map() },
-            "EM004": { name: "EM004", slaveID: 4, fc: 3, start: 0x0000, buff: new Uint16Array(100), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        RtuDevices: [
+            { name: "EM001", slaveID: 1, areas: [{ fc: 3, start: 9001, len: 60 }, { fc: 3, start: 9100, len: 60 }] },
+            { name: "EM002", slaveID: 2, areas: [{ fc: 3, start: 9001, len: 60 }] },
+            { name: "EM003", slaveID: 3, areas: [{ fc: 3, start: 9001, len: 60 }] },
+            { name: "EM004", slaveID: 4, areas: [{ fc: 3, start: 9001, len: 60 }] },
+        ]
     },
-    "LOG002": {
+    {
         name: "LOG002",
-        ip: "[IP_ADDRESS]",
+        ip: "127.0.0.22",
         port: 502,
         type: "modbus",
-        devices: {
-            "WS001": { name: "WS001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        RtuDevices: [
+            { name: "WS001", slaveID: 1, areas: [{ fc: 3, start: 0, len: 60 }] },
+        ]
     },
-    "PR001": {
+    {
         name: "PR001",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR001": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.31",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    "PR002": {
+    {
         name: "PR002",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR002": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.32",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    // to PR014
-    "PR003": {
+    {
         name: "PR003",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR003": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.33",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    "PR004": {
+    {
         name: "PR004",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR004": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.34",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    "PR005": {
+    {
         name: "PR005",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR005": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.35",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    "PR006": {
+    {
         name: "PR006",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR006": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.36",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    "PR007": {
+    {
         name: "PR007",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR007": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.37",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    "PR008": {
+    {
         name: "PR008",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR008": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.38",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    "PR009": {
+    {
         name: "PR009",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR009": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.39",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    "PR010": {
+    {
         name: "PR010",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR010": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.40",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    "PR011": {
+    {
         name: "PR011",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR011": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.41",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    "PR012": {
+    {
         name: "PR012",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR012": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.42",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    "PR013": {
+    {
         name: "PR013",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR013": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.43",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     },
-    "PR014": {
+    {
         name: "PR014",
-        ip: "[IP_ADDRESS]",
-        port: 502,
-        type: "modbus",
-        devices: {
-            "PR014": { name: "PR001", slaveID: 1, fc: 3, start: 0x0000, buff: new Uint16Array(120), connectionStat: 0, penality: 0, socketClients: new Map() },
-        }
+        ip: "127.0.0.44",
+        port: "502",
+        slaveID: 1,
+        areas: [
+            { fc: 3, start: 128, len: 200 }
+        ]
     }
-}
+]
 
 export default ModBusDevices;
