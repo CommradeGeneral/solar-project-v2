@@ -5,12 +5,13 @@ import { EventEmitter } from 'events';
 class ModbusClient extends EventEmitter {
     /**
      * @param {object} options
-     * @param {string}  options.host                 - Modbus server host
-     * @param {number} [options.port=502]            - Modbus server port
-     * @param {number} [options.unitId=1]            - default unit/slave ID
-     * @param {number} [options.timeout=5000]        - request timeout in ms
-     * @param {boolean}[options.autoReconnect=true]  - reconnect on close/error
-     * @param {number} [options.reconnectDelay=1000] - fixed delay between reconnect attempts (ms)
+     * @param {string}  options.host                        - Modbus server host
+     * @param {number} [options.port=502]                   - Modbus server port
+     * @param {number} [options.unitId=1]                   - default unit/slave ID
+     * @param {number} [options.timeout=5000]               - request timeout in ms
+     * @param {boolean}[options.autoReconnect=true]         - reconnect on close/error
+     * @param {number} [options.reconnectDelay=1000]        - initial delay between reconnect attempts (ms)
+     * @param {number} [options.maxReconnectDelay=30000]    - maximum back-off delay (ms)
      */
     static ALL_DEVICES = [];
     static STATUS = {
@@ -30,6 +31,7 @@ class ModbusClient extends EventEmitter {
         timeout = 5000,
         autoReconnect = true,
         reconnectDelay = 1000,
+        maxReconnectDelay = 30000,
         deviceName = "",
         readMemoryArea = [],
         maxReadSize = 100
@@ -46,6 +48,8 @@ class ModbusClient extends EventEmitter {
         this._reconnectTimer = null;
         this._destroyed = false;      // set by destroy() — prevents any further reconnects
         this._connected = false;
+        this.status = ModbusClient.STATUS.NON_INITIALIZED;
+        this.isHolding = false;
         this.deviceName = deviceName;
         this.maxReadSize = maxReadSize;
 
@@ -108,11 +112,13 @@ class ModbusClient extends EventEmitter {
         this._socket = net.createConnection({ host: this._host, port: this._port });
         this._client = new Modbus.client.TCP(this._socket, this._unitId, this._timeout);
 
+        this._socket.setTimeout(1000);
+
         this._socket.on('connect', () => {
             this._connected = true;
             this.status = ModbusClient.STATUS.CONNECTED;
             this.loopTimer = setInterval(() => {
-                this.readingLoop()
+                this.readingLoop();
             }, this._loopDelay);
             this.emit('connect');
         });
@@ -120,21 +126,24 @@ class ModbusClient extends EventEmitter {
         this._socket.on('data', (data) => this.emit('data', data));
 
         this._socket.on('error', (err) => {
-            // Suppress ECONNRESET / EPIPE noise after we've already scheduled a reconnect
             this.status = ModbusClient.STATUS.ERROR;
             clearInterval(this.loopTimer);
-            console.log("dddd")
+            this.loopTimer = null;
             this.emit('error', err);
         });
 
         this._socket.on('timeout', () => {
+            // Destroy the socket so the 'close' event fires and reconnect is triggered.
             this.status = ModbusClient.STATUS.TIMEOUT;
-            this.emit('timeout')
+            this.emit('timeout');
+            this._socket.destroy();
         });
 
         this._socket.on('close', (hadError) => {
             this._connected = false;
             this.status = ModbusClient.STATUS.CLOSED;
+            clearInterval(this.loopTimer);
+            this.loopTimer = null;
             this.emit('close', hadError);
             this._scheduleReconnect();
         });
@@ -151,11 +160,12 @@ class ModbusClient extends EventEmitter {
         if (this._destroyed || !this._autoReconnect) return;
         if (this._reconnectTimer) return; // already scheduled
 
+        // Status shows CONNECTING immediately so callers aren't stuck reading CLOSED/ERROR
+        this.status = ModbusClient.STATUS.CONNECTING;
         this.emit('reconnecting', { delay: this._reconnectDelay });
 
         this._reconnectTimer = setTimeout(() => {
             this._reconnectTimer = null;
-            this.status = ModbusClient.STATUS.CONNECTING;
             this.connect();
         }, this._reconnectDelay);
     }
@@ -283,119 +293,88 @@ class ModbusClient extends EventEmitter {
         this.readMemoryArea.forEach((item, index) => {
             let accumlatedSize = 0;
             while (accumlatedSize < item.quantity) {
+                const chunkSize = Math.min(this.maxReadSize, item.quantity - accumlatedSize);
                 list.push({
                     unitId: item.unitId,
                     memoryAreaIndex: index,
                     start: item.start + accumlatedSize,
                     functionCode: item.functionCode,
-                    quantity: Math.min(this.maxReadSize, item.quantity - accumlatedSize),
+                    quantity: chunkSize,
                     bufferIndex: accumlatedSize
                 });
-                accumlatedSize += Math.min(this.maxReadSize, item.quantity)
-
+                // Increment by the actual chunk size, not the raw maxReadSize
+                accumlatedSize += chunkSize;
             }
         });
         return list;
     }
 
     async readingLoop() {
-        if (this.isBusy() || this.status == ModbusClient.STATUS.ERROR) {
-            return
+        // Skip if a request is already in-flight or the connection is in error
+        if (this.isBusy() || this.status === ModbusClient.STATUS.ERROR) {
+            return;
         }
-        let chunks = this.areaPartition();
-        chunks.forEach(async (item) => {
+        if (this.isHolding) {
+            return;
+        }
+
+        this.isHolding = true;
+        const chunks = this.areaPartition();
+
+        // Sequential reads — avoid concurrent MBAP frames on the same TCP socket
+        for (const item of chunks) {
+            // Bail out early if the connection dropped mid-loop
+            if (!this._connected || !this._client) break;
+
             this.setSlaveId(item.unitId);
-            await this._client.readHoldingRegisters(item.start, item.quantity).then(
-                (response) => {
-                    this.status = ModbusClient.STATUS.CONNECTED
-                    let buffer = response.response.body.valuesAsBuffer
-                    // overwrite readMemoryArea
-                    let oldBuff = this.readMemoryArea[item.memoryAreaIndex].buffer;
-                    // copy buffer to oldBuff given index start of oldBuff
-                    for (let i = 0; i < item.quantity * 2; i++) {
-                        oldBuff[i + item.bufferIndex * 2] = buffer[i]
-                    }
-                    this.readMemoryArea[item.memoryAreaIndex].buffer = oldBuff
-                    //console.log("-------------------------------------------------------")
-                    //console.log("Incomming Buffer:", buffer)
-                    //console.log("buffer start from " + item.bufferIndex + " length: " + item.byteSize, this.readMemoryArea[item.memoryAreaIndex].buffer)
+            try {
+                const response = await this._client.readHoldingRegisters(item.start, item.quantity);
+                this.status = ModbusClient.STATUS.CONNECTED;
+                const buffer = response.response.body.valuesAsBuffer;
+                const oldBuff = this.readMemoryArea[item.memoryAreaIndex].buffer;
+                for (let i = 0; i < item.quantity * 2; i++) {
+                    oldBuff[i + item.bufferIndex * 2] = buffer[i];
                 }
-            ).catch(
-                (error) => {
-                    if (error.err == 'Timeout') {
-                        this.status = ModbusClient.STATUS.TIMEOUT
-                    }
-
-                    return;
-                    //console.log(error);
+                this.readMemoryArea[item.memoryAreaIndex].buffer = oldBuff;
+            } catch (error) {
+                if (error.err === 'Timeout') {
+                    this.status = ModbusClient.STATUS.TIMEOUT;
+                    console.log("[modbus] timeout: " + new Date().toLocaleString())
                 }
-            )
-        })
+            }
+        }
 
-
-
+        this.isHolding = false;
     }
-
-
-
-
 }
 
 
 
-let devices = []
-
-devices.push(
-    new ModbusClient({
-        host: '192.168.0.20',
-        port: '502',
-        timeout: 1000,
-        autoReconnect: true,
-        loopDelay: 100,
-        reconnectDelay: 1000,   // fixed 1 s between attempts,
-        readMemoryArea: [
-            { slaveID: 10, functionCode: 3, start: 0, size: 150 },
-            { slaveID: 10, functionCode: 3, start: 100, size: 200 }
-        ],
-        maxReadSize: 13
-    })
-);
-
-console.log(devices[0].areaPartition())
-
-
-ModbusClient.ALL_DEVICES.forEach((dev) => {
-    dev.on('error', (error) => console.log("error_detected", error))
+let modbus_new = new ModbusClient({
+    host: '192.168.0.20',
+    port: '502',
+    timeout: 1000,
+    autoReconnect: true,
+    loopDelay: 200,
+    reconnectDelay: 1000,   // fixed 1 s between attempts,
+    readMemoryArea: [
+        { slaveID: 10, functionCode: 3, start: 0, size: 200 },
+        { slaveID: 10, functionCode: 3, start: 200, size: 50 }
+    ],
+    maxReadSize: 125
 })
 
-/*   CONNECTED: 0,
-        NON_INITIALIZED: 1,
-        DISCONNECTED: 2,
-        CONNECTING: 3,
-        ERROR: 4,
-        CLOSED: 5
-    }*/
 
-const statusToStr = {
-    0: 'CONNECTED',
-    1: 'NOT INITIALIZED',
-    2: 'DISCONNECTED',
-    3: 'CONNECTING',
-    4: 'ERROR',
-    5: 'CLOSED',
-    6: 'TIMEOUT'
-}
-let oldStatus
 
-setInterval(() => {
-    console.log("-------===================")
-    ModbusClient.ALL_DEVICES.forEach((dev, i) => {
-        console.log("[modbus] device " + `${(i + 1).toString().padStart(2, '0')}` + " is", statusToStr[dev.status])
-        console.log(dev.readMemoryArea.map(item => {
-            return `start: ${item.start}, functionCode: ${item.functionCode}, size: ${item.quantity}, unitId: ${item.unitId}, buffer: ${Array.from(item.buffer)}}`
-        }))
-    })
-    console.log("-------===================")
-}, 1000)
+modbus_new.on('error', (error) => console.log("[modbus1] error_detected: " + new Date().toLocaleString(), error))
+modbus_new.on('connect', () => console.log("[modbus1] connected: " + new Date().toLocaleString()))
+modbus_new.on('close', () => console.log("[modbus1] close: " + new Date().toLocaleString()))
+modbus_new.on('connecting', () => console.log("[modbus1] connecting: " + new Date().toLocaleString()))
+modbus_new.on('disconnect', () => console.log("[modbus1] disconnect: " + new Date().toLocaleString()))
+modbus_new.on('reconnect', () => console.log("[modbus1] reconnect: " + new Date().toLocaleString()))
+modbus_new.on('timeout', () => console.log("[modbus1] timeout: " + new Date().toLocaleString()))
+modbus_new.on('warn', (message) => console.log("[modbus1] warn: " + new Date().toLocaleString(), message))
+
+
 
 export default ModbusClient;
