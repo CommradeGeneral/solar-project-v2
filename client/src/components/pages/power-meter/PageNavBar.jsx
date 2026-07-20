@@ -8,6 +8,8 @@ import './PageNavBar.css'
 import { io } from 'socket.io-client';
 import { ip, socketPort } from '../../../config';
 
+import { deviceSubscriptions, deviceUnsubscriptions } from "../../../App";
+
 function PageNavBar({ language }) {
     const [optionsOpen, setOptionsOpen] = useState(false);
     const [optionIndex, setOptionIndex] = useState(0);
@@ -15,11 +17,14 @@ function PageNavBar({ language }) {
 
 
     useEffect(() => {
-        let sock = io(`ws://${ip}:${socketPort}`);
-        sock.emit('page', [
-            { deviceID: ["LOG001", `EM00${optionIndex + 1}`], startFrom: 0, length: 50 },
-        ])
-        return () => sock.disconnect()
+        deviceSubscriptions("page-nav",
+            [
+                { deviceID: `LOG001/EM` + `${(optionIndex + 1).toString().padStart(3, '0')}`, startFrom: 9001, length: 10 },
+            ]
+        )
+        return () => {
+            deviceUnsubscriptions("page-nav")
+        }
     }, [optionIndex])
 
 

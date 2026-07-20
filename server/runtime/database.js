@@ -16,7 +16,7 @@ let ModBusDevices = [
             { name: "EM001", slaveID: 1, areas: [{ fc: 3, start: 9001, len: 60 }, { fc: 3, start: 9100, len: 60 }] },
             { name: "EM002", slaveID: 2, areas: [{ fc: 3, start: 9001, len: 60 }] },
             { name: "EM003", slaveID: 3, areas: [{ fc: 3, start: 9001, len: 60 }] },
-            { name: "EM004", slaveID: 4, areas: [{ fc: 3, start: 9001, len: 60 }] },
+            { name: "EM004", slaveID: 4, areas: [{ fc: 3, start: 9001, len: 60 }, { fc: 3, start: 9100, len: 10 }] },
         ]
     },
     {

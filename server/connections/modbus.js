@@ -351,7 +351,6 @@ class ModbusClient extends EventEmitter {
                     this.status = ModbusClient.STATUS.TIMEOUT;
                     console.log("[modbus] timeout: " + new Date().toLocaleString())
                 }
-                console.log("dddd")
             }
         }
 
@@ -397,59 +396,3 @@ export default ModbusClient;
 // • Gateway devices (LOG001, LOG002): one TCP connection whose readMemoryArea
 //   spans all RTU sub-devices, each with its own slaveID.
 // • Direct TCP devices (PR001–PR014): one dedicated TCP connection per device.
-
-import ModBusDevices from '../runtime/database.js';
-
-ModBusDevices.forEach(device => {
-    let readMemoryArea;
-
-    if (device.RtuDevices) {
-        // Multi-drop RS-485 gateway: flatten all sub-device areas into one list.
-        readMemoryArea = device.RtuDevices.flatMap(rtu =>
-            rtu.areas.map(area => ({
-                deviceName: `${device.name}/${rtu.name}`,
-                slaveID: rtu.slaveID,
-                functionCode: area.fc,
-                start: area.start,
-                size: area.len
-            }))
-        );
-    } else {
-        // Direct Modbus TCP device.
-        readMemoryArea = device.areas.map(area => ({
-            deviceName: device.name,
-            slaveID: device.slaveID,
-            functionCode: area.fc,
-            start: area.start,
-            size: area.len
-        }));
-    }
-
-    device.client = new ModbusClient({
-        host: device.ip,
-        port: parseInt(device.port),
-        deviceName: device.name,
-        readMemoryArea,
-        loopDelay: 200,
-        reconnectDelay: 3000,
-        maxReconnectDelay: 3000,
-        maxReadSize: 120
-    });
-
-    console.log(device.client.areaPartition())
-
-    device.client.on('connect', () => console.log(`[${device.name}] connected`));
-    //device.client.on('close', () => console.log(`[${device.name}] connection closed`));
-    device.client.on('error', (err) => {
-        //console.log(`[${device.name}] error:`, err.message)
-    });
-    device.client.on('data', (d) => {
-        //console.log(device.name, ":", d)
-    },)
-
-    device.client.on('data-fetched', (e) => {
-        console.log(e)
-    })
-    //device.client.on('timeout', () => console.log(`[${device.name}] timeout`));
-    //device.client.on('reconnecting', ({ delay }) => console.log(`[${device.name}] reconnecting in ${delay}ms`));
-});

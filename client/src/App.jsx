@@ -15,7 +15,15 @@ import { ip, socketPort, webServerPort } from './config.js';
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import UserSetting from './components/pages/userSetting/UserSetting';
 
+let devices = [];
 
+let deviceSubscriptions = (device) => {
+
+}
+
+let deviceUnsubscriptions = (device) => {
+
+}
 
 function App() {
   let languageSettings = window.localStorage.getItem('language') ? JSON.parse(window.localStorage.getItem('language')) : { lang: 'en', dir: 'ltr' };
@@ -82,21 +90,60 @@ function App() {
     }
   ]
 
+  // disconnect all previous websockets before creating new one
 
   useEffect(() => {
-    let mysocket = io(`ws://${ip}:${socketPort}`);
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
+    socketRef.current = io(`ws://${ip}:${socketPort}`)
+    const mysocket = socketRef.current
+
+    deviceSubscriptions = (id, device) => {
+      // prevent duplicate
+      if (!devices.find((item) => item.id === id)) {
+        devices.push({
+          id: id,
+          devices: device
+        })
+      }
+
+      mysocket.emit("page", devices);
+    }
+
+    deviceUnsubscriptions = (id) => {
+      devices = devices.filter((item) => item.id !== id);
+      mysocket.emit("page", devices);
+    }
+
     mysocket.on("connect", () => {
       console.log("Connected to server", mysocket.id, ' timestamp', new Date().toLocaleTimeString());
-      mysocket.emit("page", [
-        { deviceID: ["LOG001", "EM003"], startFrom: 8, length: 1 },
-        { deviceID: ["LOG001", "EM001"], startFrom: 8, length: 1 },
-      ]);
+
+      deviceSubscriptions("main-page",
+        [
+          { deviceID: "LOG001/EM001", startFrom: 9001, length: 60 },
+          { deviceID: "LOG001/EM002", startFrom: 9001, length: 60 }
+        ]
+      )
+
     });
+    const handler = (e) => {
+      console.log("DevicesStatues from server: ", e);
+    }
+    mysocket.on("devices-statues", handler);
+
+    mysocket.on("data-exchange", (e) => {
+      console.log("Data from server: ", e);
+    })
+
+
 
 
     return () => {
       console.log('Network unloaded')
+      mysocket.off("devices-statues", handler);
       mysocket.disconnect();
+      devices = [];
     }
   }, [])
 
@@ -143,3 +190,4 @@ function App() {
 }
 
 export default App
+export { deviceSubscriptions, deviceUnsubscriptions }
